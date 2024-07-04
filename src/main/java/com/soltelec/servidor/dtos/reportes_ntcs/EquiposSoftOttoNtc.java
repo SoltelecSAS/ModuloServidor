@@ -1,0 +1,62 @@
+package com.soltelec.servidor.dtos.reportes_ntcs;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class EquiposSoftOttoNtc {
+    private String
+    marcaAg,
+    modAg,
+    serialAg,
+    marcaBg,
+    modBg,
+    serialBg,
+    pef,
+    serialE,
+    marcaRpm,
+    serialRpm,
+    marcaTempM,
+    serialTempM,
+    marcaTempA,
+    serialTempA,
+    marcaHumR,
+    serialHumR,
+    numSoft,
+    verSoft,
+    desSoft,
+    tipIdeVgp,
+    numIdeVgp,
+    nomVgp,
+    fFugas,
+    fVgp,
+    pAltaLab,
+    pAltaCil,
+    pAltaCer,
+    pBajaLab,
+    pBajaCil,
+    pBajaCer,
+    pHcAltoP,
+    pHcAltoH,
+    pHcBajoP,
+    pHcBajoH,
+    pCoAlto,
+    pCoBajo,
+    pCo2Alto,
+    pCo2Bajo,
+    pO2Alto,
+    pO2Bajo,
+    rHcAltoP,
+    rHcAltoH,
+    rHcBajoP,
+    rHcBajoH,
+    rCoAlto,
+    rCoBajo,
+    rCo2Alto,
+    rCo2Bajo,
+    rO2Alto,
+    rO2Bajo,
+    cVgp,
+    rVgp;
+}

@@ -1,0 +1,1 @@
+yum install glibc alsa-lib freetype libICE libSM libX11 libXau libXdamage libXext libXfixes libXi libXrandr libXrender libXtst libgcc libuuid libxcb zlib

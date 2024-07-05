@@ -170,12 +170,12 @@ public class FrmImportBackup extends javax.swing.JFrame {
             // Realizar operaciones relacionadas con Swing en el EDT
             SwingUtilities.invokeLater(() -> {
                 if (!edit) {
-                    jTextField1.setText("db_cda");
+                    jTextField1.setText("respaldo");
                 }
 
-                if (edit && jTextField1.getText().isEmpty()) {
+                if ((edit && jTextField1.getText().isEmpty()) || (edit && jTextField1.getText().equals("db_cda"))) {
                     JOptionPane.showMessageDialog(null, "Coloque un nombre válido para la base de datos", "Mensaje", JOptionPane.ERROR_MESSAGE);
-                    throw new RuntimeException("No colocó un nombre en la base de datos");
+                    throw new RuntimeException("No colocó un nombre en la base de datos o coloco db_cda que esta prohibido");
                 }
             });
 

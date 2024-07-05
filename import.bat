@@ -1,1 +1,1 @@
-mysql --defaults-extra-file=mysql.cnf --host=192.168.1.7 --port=3306 divecol_dorada < C:\Users\user\Downloads\02-07-2024.sql
+mysql --defaults-extra-file=mysql.cnf --host=192.168.1.7 --port=3306 ejemplo < null

@@ -844,7 +844,7 @@ public class Reportes {
     }
 
     public static ReporteNtc getNtc(Date fechaInicio, Date fechaFin, int tipo){ //tipos: 0 -> NTC4983, 1 -> NTC5365, 2 -> NTC4231
-        String[] condiciones = {"AND v.CLASS NOT IN (10) AND (tg.Nombre_gasolina = 'GASOLINA' OR tg.Nombre_gasolina = 'GAS - GASOLINA')", "AND v.CLASS IN (10)", "AND tg.Nombre_gasolina = 'DIESEL'"}; 
+        String[] condiciones = {"AND v.CLASS NOT IN (10) AND (tg.Nombre_gasolina = 'GASOLINA' OR tg.Nombre_gasolina = 'GAS - GASOLINA')", "AND v.CLASS IN (10)", "AND tg.Nombre_gasolina = 'DIESEL'", ""}; 
 
         List<DatosCda> listaDatosCda = new ArrayList<>();
         List<PropietariosNtc> listaPropietarios = new ArrayList<>();

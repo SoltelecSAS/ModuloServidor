@@ -5,6 +5,7 @@
  */
 package com.soltelec.servidor.igrafica;
 
+import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.dao.CertificadosJpaController;
 import com.soltelec.servidor.dao.HojaPruebasJpaController;
 import com.soltelec.servidor.dao.PruebasJpaController;
@@ -193,30 +194,7 @@ public class ReporteCortolima extends javax.swing.JInternalFrame {
         sdf = new SimpleDateFormat("dd/MM/yyyy");
         sdfH = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         HojaPruebasJpaController hpjc = new HojaPruebasJpaController();
-        //   List<Pruebas> lstPruebas = hpjc.findByVehiculo(fechaInicial, fechaFinal);
         List<Pruebas> lstPruebas = hpjc.findByDatePruebas(fechaInicial, fechaFinal);
-        /*for (Pruebas pruebas : lstPruebas) {
-         Calendar cal = Calendar.getInstance();
-         cal.setTime(pruebas.getHojaPruebas().getFechaingresovehiculo());
-         int monthHp = cal.get(Calendar.MONTH);
-         Calendar calPr = Calendar.getInstance();
-         calPr.setTime(pruebas.getFechaPrueba());
-         int monthPru= calPr.get(Calendar.MONTH);
-         if(pruebas.getIdPruebas()==87738){
-         int eve=1;
-         }
-         if(pruebas.getIdPruebas()==87875){
-         int eve=1;
-         }
-         if(monthPru==2 ){
-         try {
-         PruebasJpaController pruC = new PruebasJpaController();
-         pruC.editPrueXFechas(pruebas.getIdPruebas(), pruebas.getHojaPruebas().getFechaingresovehiculo());
-         } catch (Exception ex) { }
-         }
-         }    
-         JOptionPane.showMessageDialog(this, "EPA TERMINE DE AJUSTAR MIRE A VER CUAL FUE EL TRABAJO");
-         return ;*/
         if (lstPruebas == null || lstPruebas.isEmpty()) {
             JOptionPane.showMessageDialog(this, "La consulta no genero datos");
             return;
@@ -227,8 +205,8 @@ public class ReporteCortolima extends javax.swing.JInternalFrame {
         String form;
         for (Pruebas pruebas : lstPruebas) {
             //Informacion del vehiculo
-            if (pruebas.getHojaPruebas().getTestsheet() == 16290) {
-                int e = 0;
+            if (pruebas.getHojaPruebas() == null || pruebas == null) {
+                continue;
             }
             if (pruebas.getHojaPruebas().getReinspeccionList2().size() > 0) {
                 Reinspeccion r = pruebas.getHojaPruebas().getReinspeccionList2().iterator().next();
@@ -507,58 +485,54 @@ public class ReporteCortolima extends javax.swing.JInternalFrame {
         Float valTemp = 0.0F;
         if (pruebas.getTipoPrueba().getTesttype() == 8 && !pruebas.getFinalizada().equalsIgnoreCase("A")) {
             try {
-                if (pruebas.getHojaPruebas().getTestsheet() == 15300) {
-                    System.out.println("ENTRE CONDICIONAL ");
-                    if (pruebas.getIdPruebas() == 125033) {
-
-                    }
-                }
                 System.out.println("id es  " + pruebas.getIdPruebas());
                 tieneRegistro = true;
                 dataRow[0] = pruebas.getIdPruebas();
-                if (pruebas.getFechaPrueba() != null) {
-                    dataRow[1] = sdfH.format(pruebas.getFechaPrueba());
+                
+                Date fechaPrueba = pruebas.getFechaPrueba();
+                HojaPruebas hojaPruebas = pruebas.getHojaPruebas();
+
+                if (fechaPrueba != null) {
+                    dataRow[1] = sdfH.format(fechaPrueba);
+                } else if (nroIntento == 2) {
+                    Reinspeccion rein = hojaPruebas.getReinspeccionList2().iterator().next();
+                    dataRow[1] = sdf.format(rein.getFechaSiguiente());
                 } else {
-                    if (nroIntento == 2) {
-                        Reinspeccion rein = pruebas.getHojaPruebas().getReinspeccionList2().iterator().next();
-                        dataRow[1] = sdf.format(rein.getFechaSiguiente());
-                    } else {
-                        dataRow[1] = sdf.format(pruebas.getHojaPruebas().getFechaingresovehiculo());
-                    }
+                    dataRow[1] = sdf.format(hojaPruebas.getFechaingresovehiculo());
                 }
+
                 if (pruebas.getFechaFinal() != null) {
                     dataRow[2] = sdfH.format(pruebas.getFechaFinal());
                 } else {
-                    int min = 0;
-                    int sec = 0;
-                    int minActual = 0;
                     Calendar calFechaFinal = Calendar.getInstance();
-                    if (pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype() == 4) {
-                        min = ThreadLocalRandom.current().nextInt(2, 6);
-                        calFechaFinal.setTime(pruebas.getHojaPruebas().getFechaingresovehiculo());
-                        minActual = calFechaFinal.get(Calendar.MINUTE);
-                        calFechaFinal.set(Calendar.MINUTE, minActual + min);
-                        sec = ThreadLocalRandom.current().nextInt(1, 59);
-                        calFechaFinal.set(Calendar.SECOND, sec);
+                    calFechaFinal.setTime(pruebas.getHojaPruebas().getFechaingresovehiculo());
+                
+                    int min = 0;
+                    int sec = ThreadLocalRandom.current().nextInt(1, 59);
+                    int cartype = pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype();
+                
+                    switch (cartype) {
+                        case 4:
+                            min = ThreadLocalRandom.current().nextInt(2, 6);
+                            break;
+                        case 1:
+                            min = ThreadLocalRandom.current().nextInt(3, 8);
+                            break;
+                        case 3:
+                            min = ThreadLocalRandom.current().nextInt(4, 5);
+                            break;
+                        default:
+                            break;
                     }
-                    if (pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype() == 1) {
-                        min = ThreadLocalRandom.current().nextInt(3, 8);
-                        calFechaFinal.setTime(pruebas.getHojaPruebas().getFechaingresovehiculo());
-                        minActual = calFechaFinal.get(Calendar.MINUTE);
-                        calFechaFinal.set(Calendar.MINUTE, minActual + min);
-                        sec = ThreadLocalRandom.current().nextInt(1, 59);
-                        calFechaFinal.set(Calendar.SECOND, sec);
-                    }
-                    if (pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype() == 3) {
-                        min = ThreadLocalRandom.current().nextInt(4, 5);
-                        calFechaFinal.setTime(pruebas.getHojaPruebas().getFechaingresovehiculo());
-                        calFechaFinal.set(Calendar.MINUTE, minActual + min);
-                        sec = ThreadLocalRandom.current().nextInt(1, 59);
-                        sec = ThreadLocalRandom.current().nextInt(1, 59);
-                        calFechaFinal.set(Calendar.SECOND, sec);
-                    }
+                
+                    int minActual = calFechaFinal.get(Calendar.MINUTE);
+                    calFechaFinal.set(Calendar.MINUTE, minActual + min);
+                    calFechaFinal.set(Calendar.SECOND, sec);
+                
                     pruebas.setFechaFinal(calFechaFinal.getTime());
+                    dataRow[2] = sdfH.format(pruebas.getFechaFinal());
                 }
+                
                 dataRow[3] = " ";
                 dataRow[4] = pruebas.getUsuarios().getNombreusuario();
                 String forMedTemp = "No Definido";
@@ -573,55 +547,53 @@ public class ReporteCortolima extends javax.swing.JInternalFrame {
                 dataRow[17] = "NO";
                 dataRow[18] = "NO";
 
-                if (pruebas.getComentarioAborto() != null) {
-                    if (pruebas.getComentarioAborto().equalsIgnoreCase("Condiciones Anormales")) {
-                        if (pruebas.getObservaciones() != null) {
-                            if (pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype() == 4) {
-                                String[] arrValor = pruebas.getObservaciones().split(".-");
-                                if (arrValor.length > 1) {
-                                    String[] arrCondiciones = arrValor[1].split(";");
-                                    if (arrCondiciones.length > 0) {
-                                        for (int i = 0; i < arrCondiciones.length; i++) {
-                                            if (arrCondiciones[i].startsWith("Existencia de fugas")) {
-                                                dataRow[9] = "SI";
-                                            }
-                                            if (arrCondiciones[i].startsWith("Salidas adicionales") || arrCondiciones[i].startsWith(" Salidas adicionales")) {
-                                                dataRow[10] = "SI";
-                                            }
-                                            if (arrCondiciones[i].startsWith("Ausencia de tapones") || arrCondiciones[i].startsWith(" Ausencia de tapones")) {
-                                                dataRow[11] = "SI";
-                                            }
-                                        }
-                                    }
-                                }
-                            }//si Moto
-                        }//si exitenCondiciones
-                    }//si exitenCondiciones
-                }//si diferenteNull
+                if (
+                pruebas.getComentarioAborto() != null 
+                && pruebas.getComentarioAborto().equalsIgnoreCase("Condiciones Anormales") 
+                && pruebas.getObservaciones() != null 
+                && pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype() == 4
+                ) {
+                    String[] arrValor = pruebas.getObservaciones().split(".-");
+                    if (arrValor.length > 1) {
+                        String[] arrCondiciones = arrValor[1].split(";");
+                        for (String condicion : arrCondiciones) {
+                            if (condicion.trim().startsWith("Existencia de fugas")) {
+                                dataRow[9] = "SI";
+                            }
+                            if (condicion.trim().startsWith("Salidas adicionales")) {
+                                dataRow[10] = "SI";
+                            }
+                            if (condicion.trim().startsWith("Ausencia de tapones")) {
+                                dataRow[11] = "SI";
+                            }
+                        }
+                    }
+                }
+                
 
                 if (pruebas.getComentarioAborto() != null) {
-                    if (pruebas.getComentarioAborto().equalsIgnoreCase("REVOLUCIONES FUERA RANGO")) {
+                    String comentarioAborto = pruebas.getComentarioAborto();
+                
+                    if (comentarioAborto.equalsIgnoreCase("REVOLUCIONES FUERA RANGO")) {
                         dataRow[17] = "SI";
                     }
-                    if (pruebas.getComentarioAborto().startsWith("Presencia")) {
+                    if (comentarioAborto.startsWith("Presencia")) {
                         dataRow[18] = "SI";
                     }
                 }
-                if (pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype() == 4) {
-                    dataRow[12] = "N/A";
-                    dataRow[13] = "N/A";
-                    dataRow[14] = "N/A";
-                    dataRow[15] = "N/A";
-                    dataRow[15] = "N/A";
-                    dataRow[16] = "N/A";
+
+                int cartype = pruebas.getHojaPruebas().getVehiculos().getTipoVehiculo().getCartype();
+
+                if (cartype == 4) {
+                    for (int i = 12; i <= 16; i++) {
+                        dataRow[i] = "N/A";
+                    }
                 } else {
-                    dataRow[11] = "NO";
-                    dataRow[12] = "NO";
-                    dataRow[13] = "NO";
-                    dataRow[14] = "NO";
-                    dataRow[15] = "NO";
-                    dataRow[16] = "NO";
+                    for (int i = 11; i <= 16; i++) {
+                        dataRow[i] = "NO";
+                    }
                 }
+
                 List<Defxprueba> lstDefxprueba = pruebas.getDefectos();
                 for (Defxprueba defxprueba : lstDefxprueba) {
                     switch (defxprueba.getDefxpruebaPK().getIdDefecto()) {
@@ -686,7 +658,7 @@ public class ReporteCortolima extends javax.swing.JInternalFrame {
                     }
 
                     if (hour == 17) {
-                        temp = ThreadLocalRandom.current().nextDouble(31.55, 30.10);
+                        temp = ThreadLocalRandom.current().nextDouble(30.10, 31.55);
                     }
                     if (hour == 18) {
                         temp = ThreadLocalRandom.current().nextDouble(30.10, 32);
@@ -1025,7 +997,7 @@ public class ReporteCortolima extends javax.swing.JInternalFrame {
         Connection conexion = null;
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            conexion = DriverManager.getConnection("jdbc:mysql://192.168.0.101:3306" + "/db_cda" + "?zeroDateTimeBehavior=convertToNull", "root", "admin");
+            conexion = DriverManager.getConnection(Conexion.getUrl(), Conexion.getUsuario(), Conexion.getContrasena());
         } catch (SQLException e) {
             e.printStackTrace(System.err);
         }

@@ -11,12 +11,26 @@ package com.soltelec.servidor.conexion;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.soltelec.appencript.Utilidades;
+import com.soltelec.servidor.dtos.reporte_dagma.Dagma;
 import com.soltelec.servidor.utils.CMensajes;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
@@ -33,6 +47,8 @@ public class Conexion implements Serializable {
     protected static String contrasena;
     private static Conexion instance;
 
+    private static final String USER_AGENT = "Mozilla/5.0";
+
     public static Conexion getInstance() {     
        setConexionFromFile();
        return instance;
@@ -44,6 +60,7 @@ public class Conexion implements Serializable {
 
     public static void setConexionFromFile() {
         try {
+
             FileReader fileReader = new FileReader(CARPETA + NOMBRE_ARCHIVO + EXTENSION);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
@@ -54,12 +71,11 @@ public class Conexion implements Serializable {
             while ((linea = bufferedReader.readLine()) != null) {
                 
                 numLinea +=1;
-                
                 String dato = "";
                 
-                if(numLinea !=2 /* && numLinea !=1 */){
+                if(numLinea !=2 && numLinea !=4){
                     linea = Utilidades.deCifrar(linea);
-                    int indice = linea.indexOf("&");
+                    int indice = linea.indexOf(":");
                     dato = linea.substring(indice +1, linea.length());
                 }else{
                     int indice = linea.indexOf(":");
@@ -68,6 +84,33 @@ public class Conexion implements Serializable {
                 
                 datos.add(dato);
             }
+
+            String consulta = "SELECT NIT FROM cda WHERE id_cda = 1";
+            String url = "jdbc:mysql://" + datos.get(1) + ":" + datos.get(3) + "/" + datos.get(0) + "?zeroDateTimeBehavior=convertToNull";
+
+            boolean license = false;
+            try (Connection conexion = DriverManager.getConnection(url, datos.get(2), datos.get(4));
+                PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+                //rc representa el resultado de la consulta
+                try (ResultSet rc = consultaDagma.executeQuery()) {
+                    while (rc.next()) {
+                        String nit = rc.getString("NIT");
+                        String urlPeticion = "http://api.soltelec.com:8087/api/public/"+nit;
+                        String response = sendGet(urlPeticion);
+
+                        if (response.equalsIgnoreCase("true")) license = true;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (!license){
+                bufferedReader.close();
+                CMensajes.mensajeError("Su licencia ha expirado, contactese con Soltelec");
+                throw new RuntimeException("No tiene licencia");
+            } 
 
             baseDatos = datos.get(0);
             ipServidor = datos.get(1);
@@ -80,6 +123,51 @@ public class Conexion implements Serializable {
             CMensajes.mensajeError("No se pudo leer el archivo de conexion "+ CARPETA + NOMBRE_ARCHIVO + EXTENSION);
             System.out.println("No se pudo leer el archivo de conexion de la base de datos");
             ex.printStackTrace();
+        }
+    }
+
+    // Método para enviar una solicitud GET
+    private static String sendGet(String url) {
+        HttpURLConnection con = null;
+        try {
+            URL obj = new URL(url);
+            con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("GET");
+            con.setRequestProperty("User-Agent", USER_AGENT);
+
+            int responseCode = con.getResponseCode();
+            System.out.println("GET Response Code :: " + responseCode);
+
+            if (responseCode == HttpURLConnection.HTTP_OK) { // código 200 OK
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                return response.toString();
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) { // código 404
+                return "404 Not Found";
+            }else if (responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR) { // código 500
+                return "500 Internal Server Error";
+            }else {
+                return "Unexpected Response Code: " + responseCode;
+            }
+        } catch (java.net.UnknownHostException e) {
+            return "Unknown Host Exception: " + e.getMessage();
+        } catch (java.net.ConnectException e) {
+            return "true";
+        } catch (java.net.SocketTimeoutException e) {
+            return "Socket Timeout Exception: " + e.getMessage();
+        } catch (Exception e) {
+            return "Exception: " + e.getMessage();
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
         }
     }
     

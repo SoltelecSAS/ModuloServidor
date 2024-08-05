@@ -1237,12 +1237,19 @@ public class Reportes {
         String presenciaDilucion = "";
         String conceptoFinal = getResultado(rc.getString("Abortada"), rc.getString("Aprobada"));
 
+        String comentarioAborto = "";
+        if (conceptoFinal.equalsIgnoreCase("Abortada")) {
+            comentarioAborto = rc.getString("Comentario_aborto");
+        }else if(conceptoFinal.equalsIgnoreCase("Reprobada")){
+            comentarioAborto = rc.getString("Nombre_problema");
+        } else comentarioAborto = "";
+
         if(rc.getString("Tiempos_motor").equalsIgnoreCase("4")) presenciaDilucion= rc.getDouble("O2_ralenti") >= 11.0 ? "SI":"NO"; //Dentro de este if esta otro if cardinal
         if(rc.getString("Tiempos_motor").equalsIgnoreCase("2")) presenciaDilucion= rc.getDouble("O2_ralenti") >= 6.0 ? "SI":"NO"; //Dentro de este if esta otro if cardinal
 
         return new ResultadoPruebaCorantioquia(
             temperaturaMotor, nCilindros, rpmRalenti, hcRalenti, coRalenti, co2Ralenti, 
-            o2Ralenti, presenciaDilucion, conceptoFinal);
+            o2Ralenti, presenciaDilucion, conceptoFinal, comentarioAborto);
     }
 
     private static EquipoAnalizadorCorantioquia getAnalizadorCorantioquia(
@@ -1496,6 +1503,13 @@ public class Reportes {
     }
 
     private static DatosPruebaCorpocaldas getDatosPruebaCorpocaldas(ResultSet rc) throws SQLException{
+
+        boolean presenciaHumo  = rc.getInt("presencia_humo_n_a") == 1;
+        boolean rpmFueraRango  = rc.getInt("rpm_fuera_rango") == 1;
+        boolean fugasTuboEscape  = rc.getInt("fugas_tubo_escape") == 1;
+
+        boolean result = presenciaHumo || rpmFueraRango || fugasTuboEscape;
+
         String tempAmbiente = redondeoSegunNorma(rc.getBigDecimal("temperatura_ambiente"));
         String humedadRelativa = redondeoSegunNorma(rc.getBigDecimal("humedad_relativa"));
         String ltoeOpacidad = redondeoSegunNorma(rc.getBigDecimal("Opacidad"));
@@ -1503,12 +1517,24 @@ public class Reportes {
         String tempInicial = redondeoSegunNorma(rc.getBigDecimal("temperatura_inicial"));
         String tempFinal = redondeoSegunNorma(rc.getBigDecimal("temperatura_final"));
 
+        if (result) {
+            return new DatosPruebaCorpocaldas(
+                "", "", "", 
+                "", "", "");
+        }
         return new DatosPruebaCorpocaldas(
             tempAmbiente, humedadRelativa, ltoeOpacidad, 
             ltoeDensidadHumo, tempInicial, tempFinal);
     }
 
     private static EncendidoChispaCorpocaldas getEncendidoChispaCorpocaldas(ResultSet rc) throws SQLException{
+
+        boolean presenciaHumo  = rc.getInt("presencia_humo_n_a") == 1;
+        boolean rpmFueraRango  = rc.getInt("rpm_fuera_rango") == 1;
+        boolean fugasTuboEscape  = rc.getInt("fugas_tubo_escape") == 1;
+
+        boolean result = presenciaHumo || rpmFueraRango || fugasTuboEscape;
+
         String rpmRalenti = redondeoSegunNorma(rc.getBigDecimal("rpm_ralenti"));
         String hcRalenti = redondeoSegunNorma(rc.getBigDecimal("hc_ralenti"));
         String coRalenti = redondeoSegunNorma(rc.getBigDecimal("co_ralenti"));
@@ -1519,6 +1545,12 @@ public class Reportes {
         String coCrucero = redondeoSegunNorma(rc.getBigDecimal("CO_crucero"));
         String co2Crucero = redondeoSegunNorma(rc.getBigDecimal("CO2_crucero"));
         String o2Crucero = redondeoSegunNorma(rc.getBigDecimal("O2_crucero"));
+
+        if (result) {
+            return new EncendidoChispaCorpocaldas(
+                "", "", "", "", "", "", 
+                "", "", "", "");
+        }
 
         return new EncendidoChispaCorpocaldas(
             rpmRalenti, hcRalenti, coRalenti, co2Ralenti, o2Ralenti, rpmCrucero, 

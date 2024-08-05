@@ -15,4 +15,5 @@ public class ResultadoPruebaCorantioquia {
     private String o2Ralenti;
     private String presenciaDilucion;
     private String conceptoFinal;
+    private String causalRechazo;
 }

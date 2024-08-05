@@ -237,6 +237,8 @@ public class ReporteCAR extends javax.swing.JInternalFrame {
         String form;
         for (Pruebas pruebas : lstPruebas) {
             //Informacion del vehiculo
+            if (pruebas == null || pruebas.getHojaPruebas()==null) continue;
+            
             if (pruebas.getHojaPruebas().getTestsheet() == 16290) {
                 int e = 0;
             }

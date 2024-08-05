@@ -105,6 +105,7 @@ public class ReporteCornare extends javax.swing.JInternalFrame {
         resultadosPrueba.addColumn("02 Ralenti (%)");
         resultadosPrueba.addColumn("Presencia Dilucion");
         resultadosPrueba.addColumn("Concepto Final");
+        resultadosPrueba.addColumn("Causales rechazo o aborto");
 
         datosEquipoAnalizadorVariable = new DefaultTableModel(); //749332077
         datosEquipoAnalizadorVariable.addColumn("PEF");
@@ -224,7 +225,8 @@ public class ReporteCornare extends javax.swing.JInternalFrame {
                 resultado.getCo2Ralenti(),
                 resultado.getO2Ralenti(),
                 resultado.getPresenciaDilucion(),
-                resultado.getConceptoFinal()
+                resultado.getConceptoFinal(),
+                resultado.getCausalRechazo()
             };
             resultadosPrueba.addRow(fila);
         });

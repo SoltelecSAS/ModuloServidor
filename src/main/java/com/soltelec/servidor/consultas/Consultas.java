@@ -59,8 +59,11 @@ public class Consultas {
         "    v.Numero_exostos, \n" + //
         "    p.Fecha_prueba, \n" + //
         "    u.Nombre_usuario,\n" + //
+        "    p.Comentario_aborto,\n" + //
+        "    p.observaciones,\n" + //
         "    p.Aprobada, \n" + //
         "    p.Abortada,\n" + //
+        "    d.Nombre_problema,\n" + //
         "    MAX(CASE WHEN m1.MEASURETYPE = 8031 THEN m1.Valor_medida END) AS temperatura_ambiente,\n" + //
         "    MAX(CASE WHEN m1.MEASURETYPE = 8032 THEN m1.Valor_medida END) AS humedad_relativa,\n" + //
         "    MAX(CASE WHEN m1.MEASURETYPE = 8006 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
@@ -88,6 +91,8 @@ public class Consultas {
         "    INNER JOIN vehiculos AS v ON hp.Vehiculo_for = v.CAR\n" + //
         "    INNER JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
         "    INNER JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
+        "    LEFT JOIN defxprueba AS dp ON dp.id_prueba =p.Id_Pruebas\n" + //
+        "    LEFT JOIN defectos AS d ON d.CARDEFAULT = dp.id_defecto\n" + //
         "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
         "WHERE \n" + //
         "    p.Tipo_prueba_for = 8\n" + //

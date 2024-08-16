@@ -107,11 +107,11 @@ public class Reportes {
         String sqlEquipo = Consultas.getEquipoCorantioquiaYCorpocaldas();
 
         try (Connection conexion = DriverManager.getConnection(url, usuario, password); //Se conecta con la base de datos
-             PreparedStatement consultaPruebas = conexion.prepareStatement(sql); //Prepara la ejecucion de la consulta sql
-             PreparedStatement consultaCda = conexion.prepareStatement(sqlCda); //Prepara la ejecucion de la consulta sqlCda
-             PreparedStatement consultaSoftware = conexion.prepareStatement(sqlSoftware); //Prepara la ejecucion de la consulta sqlSoftware
-             PreparedStatement consultaEquipo = conexion.prepareStatement(sqlEquipo) //Prepara la ejecucion de la consulta sqlEquipo
-             ) {
+            PreparedStatement consultaPruebas = conexion.prepareStatement(sql); //Prepara la ejecucion de la consulta sql
+            PreparedStatement consultaCda = conexion.prepareStatement(sqlCda); //Prepara la ejecucion de la consulta sqlCda
+            PreparedStatement consultaSoftware = conexion.prepareStatement(sqlSoftware); //Prepara la ejecucion de la consulta sqlSoftware
+            PreparedStatement consultaEquipo = conexion.prepareStatement(sqlEquipo) //Prepara la ejecucion de la consulta sqlEquipo
+            ) {
 
             //añadir parametros de la consulta (los que aparecen como '?' en la consulta)
             consultaPruebas.setDate(1, new java.sql.Date(fechaInicio.getTime()));//selecciona el primer ? que encuentra
@@ -914,8 +914,8 @@ public class Reportes {
                     cilindraje = rc.getString("CILINDRAJE"),
                     licTrans = rc.getString("LIC_TRANS"),
                     km = rc.getString("KM"),
-                    gnvConv = rc.getString("GNV_CONV").equals("Y") ? "SI" : "NO",
-                    gnvConvV = gnvConv.equals("SI") ? rc.getString("GNV_CONV_V") : "",
+                    gnvConv = "",
+                    gnvConvV = "",
                     marca = rc.getString("MARCA"),
                     linea = rc.getString("LINEA"),
                     clase = rc.getString("CLASE"),
@@ -930,6 +930,11 @@ public class Reportes {
                     disMotor = rc.getString("DIS_MOTOR"),
                     numEscape = rc.getString("NUM_ESCAPE");
 
+                    if(rc.getString("GNV_CONV") != null && rc.getString("GNV_CONV") !=""){
+                        gnvConv = rc.getString("GNV_CONV").equals("Y") ? "SI" : "NO";
+                        gnvConvV = gnvConv.equals("SI") ? rc.getString("GNV_CONV_V") : "";
+                    }
+                    
                     //catalizador
                     String catalizardor = rc.getString("LUGAR_TEMP").equals("C") ? "SI" : "NO";
 

@@ -6,7 +6,11 @@
  */
 package com.soltelec.servidor.igrafica;
 
+import com.soltelec.servidor.consultas.Reportes;
 import com.soltelec.servidor.dao.PruebasJpaController;
+import com.soltelec.servidor.dtos.reporte_cormacarena.CormacarenaCarros;
+import com.soltelec.servidor.dtos.reporte_cormacarena.CormacarenaMotos;
+import com.soltelec.servidor.dtos.reporte_dagma.Dagma;
 import com.soltelec.servidor.model.HojaPruebas;
 import com.soltelec.servidor.model.Medidas;
 import com.soltelec.servidor.model.Pruebas;
@@ -110,6 +114,33 @@ public class ReporteCormacarena extends javax.swing.JInternalFrame {
     }
 
     private void fillData(Date fInicial, Date fFinal) {
+        List<CormacarenaMotos> listaDatos = Reportes.getCormacarenaMotos(fInicial, fFinal);
+        //List<CormacarenaCarros> lista
+
+        listaDatos.stream().forEach(datos->{
+            Object [] fila ={
+                datos.getMarca(),
+                datos.getModelo(),
+                datos.getTiempos(),
+                datos.getCoRalenti(),
+                datos.getCo2Ralenti(),
+                datos.getO2Ralenti(),
+                datos.getHcRalenti(),
+                datos.getTempAmbiente(),
+                datos.getHumedadRelativa(),
+                datos.getResultado(),
+                datos.getNivelDeEmisionRuido(),
+                datos.getFechaPrueba(),
+                datos.getPlaca()
+            };
+            modeloMotos.addRow(fila);
+        });
+
+        tblMotos.setModel(modeloMotos);
+        tblMotos.setEnabled(false);
+    }
+
+    private void fillDataa(Date fInicial, Date fFinal) {
         iniciarModelo();
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 

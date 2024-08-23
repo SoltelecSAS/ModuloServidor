@@ -1,1 +1,1 @@
-mysql --defaults-extra-file=mysql.cnf --host=192.168.1.7 --port=3306 ejemplo < null
+mysql --defaults-extra-file=mysql.cnf --host=192.168.1.7 --port=3306 villabel < C:\Users\user\Downloads\23-08-2024.sql

@@ -21,6 +21,8 @@ import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosPruebaCorant
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosVehiculoCorantioquia;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.EquipoAnalizadorCorantioquia;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.ResultadoPruebaCorantioquia;
+import com.soltelec.servidor.dtos.reporte_cormacarena.CormacarenaCarros;
+import com.soltelec.servidor.dtos.reporte_cormacarena.CormacarenaMotos;
 import com.soltelec.servidor.dtos.reporte_corpoboyaca.Corpoboyaca;
 import com.soltelec.servidor.dtos.reporte_corpoboyaca.EquipoAnalizadorBoyaca;
 import com.soltelec.servidor.dtos.reporte_corpoboyaca.PropietarioBoyaca;
@@ -84,6 +86,99 @@ public class Reportes {
                     //Colocara datos segun cada columna que encuentre
                     Dagma dagma = crearDagmaDesdeResultSet(rc);
                     listaDatos.add(dagma);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        //Genera una lista con todos los datos
+        return listaDatos;
+    }
+
+    public static List<CormacarenaMotos> getCormacarenaMotos(Date fechaInicio, Date fechaFin) {
+
+        List<CormacarenaMotos> listaDatos = new ArrayList<>();
+        String consulta = Consultas.getCormacarenaMotos();
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+            PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+            //añadir parametros de la consulta (los que aparecen como ? en la consulta)
+            consultaDagma.setDate(1, new java.sql.Date(fechaInicio.getTime()));//selecciona el primer ? que encuentra
+            consultaDagma.setDate(2, new java.sql.Date(fechaFin.getTime()));//selecciona el segundo ? que encuentra
+
+            //rc representa el resultado de la consulta
+            try (ResultSet rc = consultaDagma.executeQuery()) {
+                while (rc.next()) {
+
+                    CormacarenaMotos cormacarena = new CormacarenaMotos(
+                        rc.getString("Nombre_marca"), 
+                        rc.getString("Modelo"), 
+                        rc.getString("Tiempos_motor") + "T", 
+                        redondeoSegunNorma(rc.getBigDecimal("CO_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("CO2_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("O2_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("HC_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("temperatura_ambiente")), 
+                        redondeoSegunNorma(rc.getBigDecimal("humedad_relativa")), 
+                        rc.getString("resultado_prueba").equalsIgnoreCase("Y")  ? "Aprobada" : "Reprobada", 
+                        redondeoSegunNorma(rc.getBigDecimal("ruido")), 
+                        rc.getString("Fecha_prueba"), 
+                        rc.getString("CARPLATE")
+                    );
+
+                    //Colocara datos segun cada columna que encuentre
+                    listaDatos.add(cormacarena);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        //Genera una lista con todos los datos
+        return listaDatos;
+    }
+
+    public static List<CormacarenaCarros> getCormacarenaCarros(Date fechaInicio, Date fechaFin) {
+
+        List<CormacarenaCarros> listaDatos = new ArrayList<>();
+        String consulta = Consultas.getCormacarenaCarros();
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+            PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+            //añadir parametros de la consulta (los que aparecen como ? en la consulta)
+            consultaDagma.setDate(1, new java.sql.Date(fechaInicio.getTime()));//selecciona el primer ? que encuentra
+            consultaDagma.setDate(2, new java.sql.Date(fechaFin.getTime()));//selecciona el segundo ? que encuentra
+
+            //rc representa el resultado de la consulta
+            try (ResultSet rc = consultaDagma.executeQuery()) {
+                while (rc.next()) {
+
+                    CormacarenaCarros cormacarena = new CormacarenaCarros(
+                        rc.getString("Nombre_marca"), 
+                        rc.getString("Modelo"), 
+                        rc.getString("Cinlindraje"), 
+                        redondeoSegunNorma(rc.getBigDecimal("Nombre_clase")), 
+                        redondeoSegunNorma(rc.getBigDecimal("Nombre_servicio")), 
+                        redondeoSegunNorma(rc.getBigDecimal("HC_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("CO_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("CO2_ralenti")), 
+                        redondeoSegunNorma(rc.getBigDecimal("O2_ralenti")),
+                        redondeoSegunNorma(rc.getBigDecimal("RPM_crucero")), 
+                        redondeoSegunNorma(rc.getBigDecimal("HC_crucero")), 
+                        redondeoSegunNorma(rc.getBigDecimal("CO_crucero")), 
+                        redondeoSegunNorma(rc.getBigDecimal("CO2_crucero")), 
+                        redondeoSegunNorma(rc.getBigDecimal("O2_crucero")), 
+                        rc.getString("resultado_prueba").equalsIgnoreCase("Y")  ? "Aprobada" : "Reprobada", 
+                        redondeoSegunNorma(rc.getBigDecimal("ruido")), 
+                        rc.getString("Fecha_prueba"), 
+                        rc.getString("CARPLATE")
+                    );
+
+                    //Colocara datos segun cada columna que encuentre
+                    listaDatos.add(cormacarena);
                 }
             }
         } catch (SQLException e) {

@@ -1,1 +1,1 @@
-mysqldump --defaults-extra-file=mysql.cnf --host=192.168.1.7 --port=3306 revisar > 13-06-2024.sql
+mysqldump --defaults-extra-file=mysql.cnf --host=192.168.1.7 --port=3306 jardin_botanico > 04-09-2024.sql

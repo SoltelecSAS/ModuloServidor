@@ -1371,16 +1371,18 @@ public class Consultas {
         "    v.Modelo,\n" + //
         "    v.Tiempos_motor,\n" + //
         "    \n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8001 THEN m1.Valor_medida END) AS HC_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8002 THEN m1.Valor_medida END) AS CO_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8003 THEN m1.Valor_medida END) AS CO2_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8004 THEN m1.Valor_medida END) AS O2_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8031 THEN m1.Valor_medida END) AS temperatura_ambiente,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8032 THEN m1.Valor_medida END) AS humedad_relativa,\n" + //
+        "MAX(CASE WHEN m1.MEASURETYPE = 8001 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8018 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS hc_ralenti,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8002 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8020 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS co_ralenti,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8003 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8019 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS co2_ralenti,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8004 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8021 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS O2_ralenti," + //
         "    \n" + //
         "    p.Aprobada AS resultado_prueba, \n" + //
         "    MAX(CASE WHEN m1.MEASURETYPE = 7003 \n" + //
-        "\t\t\t\tOR m1.MEASURETYPE = 7004 \n" + //
+        "        OR m1.MEASURETYPE = 7004 \n" + //
         "                OR m1.MEASURETYPE = 7005 THEN m1.Valor_medida END) AS ruido,\n" + //
         "\tp.Fecha_prueba,\n" + //
         "    v.CARPLATE\n" + //

@@ -1366,50 +1366,85 @@ public class Consultas {
 
     public static String getCormacarenaMotos(){
         return
-        "SELECT \n" + //
-        "\tmr.Nombre_marca,\n" + //
-        "    v.Modelo,\n" + //
-        "    v.Tiempos_motor,\n" + //
-        "    \n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8001 THEN m1.Valor_medida END) AS HC_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8002 THEN m1.Valor_medida END) AS CO_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8003 THEN m1.Valor_medida END) AS CO2_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8004 THEN m1.Valor_medida END) AS O2_ralenti,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8031 THEN m1.Valor_medida END) AS temperatura_ambiente,\n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 8032 THEN m1.Valor_medida END) AS humedad_relativa,\n" + //
-        "    \n" + //
-        "    p.Aprobada AS resultado_prueba, \n" + //
-        "    MAX(CASE WHEN m1.MEASURETYPE = 7003 \n" + //
-        "\t\t\t\tOR m1.MEASURETYPE = 7004 \n" + //
-        "                OR m1.MEASURETYPE = 7005 THEN m1.Valor_medida END) AS ruido,\n" + //
-        "\tp.Fecha_prueba,\n" + //
-        "    v.CARPLATE\n" + //
-        "\n" + //
-        "FROM \n" + //
-        "\thoja_pruebas h\n" + //
-        "    \n" + //
-        "    INNER JOIN certificados c ON c.TESTSHEET = h.TESTSHEET\n" + //
-        "    INNER JOIN vehiculos v ON v.CAR = h.Vehiculo_for\n" + //
-        "    INNER JOIN clases_vehiculo vc ON vc.CLASS = v.CLASS\n" + //
-        "    INNER JOIN servicios s ON s.SERVICE = v.SERVICE\n" + //
-        "    INNER JOIN tipos_gasolina tg ON tg.FUELTYPE = v.FUELTYPE\n" + //
-        "    LEFT JOIN pruebas p ON h.TESTSHEET = p.hoja_pruebas_for\n" + //
-        "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
-        "    INNER JOIN marcas mr ON mr.CARMARK = v.CARMARK\n" + //
-        "    \n" + //
-        "WHERE \n" + //
-        "    DATE(h.Fecha_ingreso_vehiculo) BETWEEN ? AND ?\n" + //
-        "    AND h.preventiva = 'N'\n" + //
-        "    AND h.Finalizada = 'Y' \n" + //
-        "    AND h.estado_sicov = 'SINCRONIZADO'\n" + //
-        "    AND p.Tipo_prueba_for IN (8,7)\n" + //
-        "    AND v.CLASS = 10\n" + //
-        "GROUP BY \n" + //
-        "\tc.CERTIFICATE, DATE(h.Fecha_ingreso_vehiculo),\n" + //
-        "    c.CONSECUTIVE, vc.Nombre_clase, s.Nombre_servicio, v.CARPLATE,\n" + //
-        "    v.Modelo, tg.Nombre_gasolina, v.Cinlindraje, v.kilometraje\n" + //
-        "order by p.Fecha_prueba;\n" + //
-        "";
+        "SELECT \r\n" + //
+        "    p.Id_Pruebas,\r\n" + //
+        "    mr.Nombre_marca,\r\n" + //
+        "    v.Modelo,\r\n" + //
+        "    v.Tiempos_motor,\r\n" + //
+        "    \r\n" + //
+        "    MAX(\r\n" + //
+        "        CASE \r\n" + //
+        "            WHEN m1.MEASURETYPE = 8001 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\r\n" + //
+        "            WHEN m1.MEASURETYPE = 8018 AND v.Tiempos_motor = 2 THEN m1.Valor_medida \r\n" + //
+        "        END\r\n" + //
+        "    ) AS hc_ralenti,\r\n" + //
+        "    \r\n" + //
+        "    MAX(\r\n" + //
+        "        CASE \r\n" + //
+        "            WHEN m1.MEASURETYPE = 8002 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\r\n" + //
+        "            WHEN m1.MEASURETYPE = 8020 AND v.Tiempos_motor = 2 THEN m1.Valor_medida \r\n" + //
+        "        END\r\n" + //
+        "    ) AS co_ralenti,\r\n" + //
+        "    \r\n" + //
+        "    MAX(\r\n" + //
+        "        CASE \r\n" + //
+        "            WHEN m1.MEASURETYPE = 8003 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\r\n" + //
+        "            WHEN m1.MEASURETYPE = 8019 AND v.Tiempos_motor = 2 THEN m1.Valor_medida \r\n" + //
+        "        END\r\n" + //
+        "    ) AS co2_ralenti,\r\n" + //
+        "    \r\n" + //
+        "    MAX(\r\n" + //
+        "        CASE \r\n" + //
+        "            WHEN m1.MEASURETYPE = 8004 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\r\n" + //
+        "            WHEN m1.MEASURETYPE = 8021 AND v.Tiempos_motor = 2 THEN m1.Valor_medida \r\n" + //
+        "        END\r\n" + //
+        "    ) AS O2_ralenti,\r\n" + //
+        "    \r\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8031 THEN m1.Valor_medida END) AS temperatura_ambiente,\r\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8032 THEN m1.Valor_medida END) AS humedad_relativa,\r\n" + //
+        "    \r\n" + //
+        "    p.Aprobada AS resultado_prueba,\r\n" + //
+        "\r\n" + //
+        "    -- Subconsulta para obtener el ruido solo si la prueba es de ruido\r\n" + //
+        "    (\r\n" + //
+        "        SELECT \r\n" + //
+        "            MAX(m2.Valor_medida)\r\n" + //
+        "        FROM \r\n" + //
+        "            pruebas p2\r\n" + //
+        "            LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\r\n" + //
+        "        WHERE \r\n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\r\n" + //
+        "            AND m2.MEASURETYPE IN (7003, 7004, 7005)\r\n" + //
+        "            AND p2.Tipo_prueba_for = 7\r\n" + //
+        "    ) AS ruido,\r\n" + //
+        "\r\n" + //
+        "    p.Fecha_prueba,\r\n" + //
+        "    v.CARPLATE\r\n" + //
+        "\r\n" + //
+        "FROM \r\n" + //
+        "    hoja_pruebas h\r\n" + //
+        "    INNER JOIN certificados c ON c.TESTSHEET = h.TESTSHEET\r\n" + //
+        "    INNER JOIN vehiculos v ON v.CAR = h.Vehiculo_for\r\n" + //
+        "    INNER JOIN clases_vehiculo vc ON vc.CLASS = v.CLASS\r\n" + //
+        "    INNER JOIN servicios s ON s.SERVICE = v.SERVICE\r\n" + //
+        "    INNER JOIN tipos_gasolina tg ON tg.FUELTYPE = v.FUELTYPE\r\n" + //
+        "    LEFT JOIN pruebas p ON h.TESTSHEET = p.hoja_pruebas_for\r\n" + //
+        "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\r\n" + //
+        "    INNER JOIN marcas mr ON mr.CARMARK = v.CARMARK\r\n" + //
+        "\r\n" + //
+        "WHERE \r\n" + //
+        "    DATE(h.Fecha_ingreso_vehiculo) BETWEEN ? AND ?\r\n" + //
+        "    AND h.preventiva = 'N'\r\n" + //
+        "    AND h.Finalizada = 'Y'\r\n" + //
+        "    AND h.estado_sicov = 'SINCRONIZADO'\r\n" + //
+        "    AND p.Tipo_prueba_for IN (8)\r\n" + //
+        "    AND v.CLASS = 10\r\n" + //
+        "\r\n" + //
+        "GROUP BY \r\n" + //
+        "    p.Id_Pruebas\r\n" + //
+        "\r\n" + //
+        "ORDER BY \r\n" + //
+        "    p.Fecha_prueba;";
     }
 
     public static String getCormacarenaCarros(){

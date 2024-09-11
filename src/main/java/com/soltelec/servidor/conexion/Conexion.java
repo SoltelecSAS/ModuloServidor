@@ -18,9 +18,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.soltelec.appencript.Utilidades;
 import com.soltelec.servidor.dtos.reporte_dagma.Dagma;
 import com.soltelec.servidor.utils.CMensajes;
+import com.soltelec.servidor.utils.CifraDesifra;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -74,7 +74,7 @@ public class Conexion implements Serializable {
                 String dato = "";
                 
                 if(numLinea !=2 && numLinea !=4){
-                    linea = Utilidades.deCifrar(linea);
+                    linea = CifraDesifra.deCifrar(linea);
                     int indice = linea.indexOf(":");
                     dato = linea.substring(indice +1, linea.length());
                 }else{

@@ -844,6 +844,10 @@ public final class ReporteGeneral extends javax.swing.JInternalFrame {
              * *** Informacion del Conductor ****
              */
             Propietarios conductor = hpp.getConductor();
+            
+            if (conductor == null || conductor.getNombres() == null || conductor.getApellidos() == null) {
+                continue;
+            }
             System.out.println("-----conductor" + conductor.getNombres()+conductor.getApellidos());
             System.out.println("-----identificacion" + conductor.getCarowner());
             datos[10] = conductor.getNombres() + " " + conductor.getApellidos();

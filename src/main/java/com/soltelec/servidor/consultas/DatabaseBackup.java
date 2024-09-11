@@ -62,7 +62,7 @@ public class DatabaseBackup {
 
         try {
             // Crear el archivo de opciones de configuración
-            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, Conexion.getContrasena());
+            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, "'"+Conexion.getContrasena()+"'");
             String mysqlCnfPath = currentDirectory + File.separator + "mysql.cnf";
             BufferedWriter writer = new BufferedWriter(new FileWriter(mysqlCnfPath));
             writer.write(mysqlCnfContent);

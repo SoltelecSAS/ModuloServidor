@@ -115,6 +115,7 @@ public class Conexion implements Serializable {
             baseDatos = datos.get(0);
             ipServidor = datos.get(1);
             usuario = datos.get(2);
+            System.out.println("usuario: "+ usuario);
             puerto = datos.get(3);
             contrasena = datos.get(4);
 

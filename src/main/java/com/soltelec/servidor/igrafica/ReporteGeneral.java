@@ -566,7 +566,9 @@ public final class ReporteGeneral extends javax.swing.JInternalFrame {
          * -----------------------------------------------------------------------------------------------------------------------------------------
          */
         for (HojaPruebas hp : listaHojaPruebasPorFecha) {
+            if(hp == null || hp.getVehiculos() == null || hp.getVehiculos().getCarplate() == null) continue;
             System.out.println("INSERTANDO DATOS PARA VEHICULO : " + hp.getVehiculos().getCarplate());
+
             int numeroTipoGasolina;
             numeroTipoGasolina = hp.getVehiculos().getTiposGasolina().getFueltype(); // fuelType = 3 Diesel
 

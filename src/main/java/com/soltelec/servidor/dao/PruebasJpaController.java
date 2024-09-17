@@ -4,7 +4,6 @@
  */
 package com.soltelec.servidor.dao;
 
-import com.mysql.jdbc.Blob;
 import com.soltelec.servidor.model.HojaPruebas;
 import com.soltelec.servidor.model.*;
 import com.soltelec.servidor.model.MedidaGases;
@@ -14,6 +13,7 @@ import com.soltelec.servidor.model.TiposGasolina;
 import com.soltelec.servidor.model.Usuarios;
 import com.soltelec.servidor.model.Vehiculos;
 import com.soltelec.servidor.model.ReporteSonometro;
+import com.mysql.cj.jdbc.Blob;
 import com.soltelec.servidor.conexion.PersistenceController;
 import com.soltelec.servidor.dao.exceptions.NonexistentEntityException;
 import com.soltelec.servidor.dao.exceptions.PreexistingEntityException;

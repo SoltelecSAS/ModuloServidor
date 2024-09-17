@@ -1,12 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.soltelec.servidor.conexion;
-
-
-
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,32 +6,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.soltelec.servidor.dtos.reporte_dagma.Dagma;
 import com.soltelec.servidor.utils.CMensajes;
 import com.soltelec.servidor.utils.CifraDesifra;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
-/**
- *
- * @author Gerencia TIC
- */
 public class Conexion implements Serializable {
 
     public static final String ARCHIVO = "Conexion.stlc"; 
-    private String driver = "com.mysql.jdbc.Driver";      
+    private String driver = "com.mysql.cj.jdbc.Driver";   
     protected static String baseDatos;
     protected static String ipServidor;
     protected static String usuario;
@@ -57,6 +39,7 @@ public class Conexion implements Serializable {
     private static final String CARPETA = "./configuracion/";
     private static final String EXTENSION = ".soltelec";
     private static final String NOMBRE_ARCHIVO = "Conexion";
+    private static boolean licencia = false;
 
     public static void setConexionFromFile() {
         try {
@@ -67,6 +50,7 @@ public class Conexion implements Serializable {
             String linea;
             int numLinea = 0;
             List<String> datos = new ArrayList<>();
+            String response = "";
 
             while ((linea = bufferedReader.readLine()) != null) {
                 
@@ -86,36 +70,59 @@ public class Conexion implements Serializable {
             }
 
             String consulta = "SELECT NIT FROM cda WHERE id_cda = 1";
-            String url = "jdbc:mysql://" + datos.get(1) + ":" + datos.get(3) + "/" + datos.get(0) + "?zeroDateTimeBehavior=convertToNull";
+            String url = "jdbc:mysql://" + datos.get(1) + ":" + datos.get(3) + "/" + datos.get(0) + "?zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false";
+            System.out.println("URL: "+url);
 
-            boolean license = false;
-            try (Connection conexion = DriverManager.getConnection(url, datos.get(2), datos.get(4));
-                PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+            String user = datos.get(2);
+            String password = datos.get(4);
+            
+            if (!licencia){
+                try (Connection conexion = DriverManager.getConnection(
+                    url, 
+                    user, 
+                    password
+                ); 
+                    PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
 
-                //rc representa el resultado de la consulta
-                try (ResultSet rc = consultaDagma.executeQuery()) {
-                    while (rc.next()) {
-                        String nit = rc.getString("NIT");
-                        String urlPeticion = "http://api.soltelec.com:8087/api/public/"+nit;
-                        String response = sendGet(urlPeticion);
+                    String nit = "";
+                    //rc representa el resultado de la consulta
+                    try (ResultSet rc = consultaDagma.executeQuery()) {
+                        while (rc.next()) {
+                            nit = rc.getString("NIT");
+                            String urlPeticion = "http://api.soltelec.com:8087/api/public/"+nit;
+                            response = sendGet(urlPeticion);
 
-                        if (response.equalsIgnoreCase("true")) license = true;
+                            if (response.equalsIgnoreCase("true")) licencia = true;
+                        }
                     }
+                    if (nit.equals("")) {
+                        CMensajes.mensajeError("La columna 'id_cda' de la tabla 'cda' de la base de datos debe ser 1 \no el cda no cuenta con NIT registrado en esa misma tabla\n Contactese con Soltelec.\n");
+                        throw new RuntimeException("Error porque no logro encontrar los datos de la tabla cda para id_cda = 1 o el campo NIT de esa misma tabla esta vacio\n");
+                    }
+                } catch (Exception e) {
+                    CMensajes.mensajeError(
+                        "Hubo un error al tratar de conectarse a la base de datos, contactese con Soltelec.\n"+
+                        "Revise por favor el archivo "+CARPETA + NOMBRE_ARCHIVO + EXTENSION+"\n"+
+                        "Si este mismo error se repite en todos los computadores del CDA revise el servidor"
+                    );
+                    e.printStackTrace();
+                    throw new RuntimeException("Error al tratar de conectarse con el base de datos: \n"+ e.getMessage());
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
 
-            if (!license){
+            if (!licencia){
                 bufferedReader.close();
-                CMensajes.mensajeError("Su licencia ha expirado, contactese con Soltelec");
-                throw new RuntimeException("No tiene licencia");
+                CMensajes.mensajeError(
+                    "Su licencia ha expirado o no tiene conexion a internet, contactese con Soltelec\n"
+                );
+                String mensajeRespuesta = response.equalsIgnoreCase("false") ? "Licencia expirada" : response;
+                System.out.println("Respuesta del VPS ante la expiracion de licencia: "+mensajeRespuesta);
+                throw new RuntimeException("respuesta del VPS: \n"+ mensajeRespuesta);
             } 
 
             baseDatos = datos.get(0);
             ipServidor = datos.get(1);
             usuario = datos.get(2);
-            System.out.println("usuario: "+ usuario);
             puerto = datos.get(3);
             contrasena = datos.get(4);
 
@@ -127,7 +134,6 @@ public class Conexion implements Serializable {
         }
     }
 
-    // Método para enviar una solicitud GET
     private static String sendGet(String url) {
         HttpURLConnection con = null;
         try {
@@ -153,7 +159,7 @@ public class Conexion implements Serializable {
             } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) { // código 404
                 return "404 Not Found";
             }else if (responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR) { // código 500
-                return "500 Internal Server Error";
+                return "El CDA no se encuentra inscrito en la base de datos del VPS";
             }else {
                 return "Unexpected Response Code: " + responseCode;
             }

@@ -281,7 +281,7 @@ public class InternalPruebaVisualDatos extends javax.swing.JInternalFrame {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection cn = (com.mysql.jdbc.Connection) DriverManager.getConnection("jdbc:mysql://" + Conexion.getIpServidor() + ":" + Conexion.getPuerto() + "/" + Conexion.getBaseDatos(), Conexion.getUsuario(), Conexion.getContrasena());
+            Connection cn = (Connection) DriverManager.getConnection("jdbc:mysql://" + Conexion.getIpServidor() + ":" + Conexion.getPuerto() + "/" + Conexion.getBaseDatos(), Conexion.getUsuario(), Conexion.getContrasena());
 //            Connection cn = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/db_cda", "root", "50lt3l3c545");
             return cn;
         } catch (ClassNotFoundException | SQLException ex) {

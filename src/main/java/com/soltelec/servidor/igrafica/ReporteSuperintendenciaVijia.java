@@ -154,6 +154,7 @@ public class ReporteSuperintendenciaVijia extends javax.swing.JInternalFrame {
         //Set de columnas de pruebas de gases otto
         modeloGasesOtto = new DefaultTableModel();
 
+        modeloGasesOtto.addColumn("Diseño");//0
         modeloGasesOtto.addColumn("Temperatura");//0
         modeloGasesOtto.addColumn("Rpm Crucero");//1
         modeloGasesOtto.addColumn("Rpm Ralentí");//2
@@ -230,7 +231,7 @@ public class ReporteSuperintendenciaVijia extends javax.swing.JInternalFrame {
                 d.getEficacia_total(),
                 "",
                 d.getFuerza_eje_der_1(),
-                d.getFuerza_eje_der_2(),
+                d.getFuerza_eje_der_2() == null ? "" : d.getFuerza_eje_der_2(),
                 "",
                 "",
                 "",
@@ -281,6 +282,7 @@ public class ReporteSuperintendenciaVijia extends javax.swing.JInternalFrame {
 
         listaDatos.stream().forEach(d->{
             Object [] fila ={
+                d.getDiseño(),
                 d.getTemp_motor(),
                 "",
                 d.getRpmRalenti(),

@@ -186,7 +186,7 @@ public class ReporteSuperintendenciaVijia extends javax.swing.JInternalFrame {
 
         listaDatos.stream().forEach(d->{
             Object [] fila ={
-                d.getNumeroFormato(),
+                d.getNumeroFormato()+"-"+d.getNumIntentos(),
                 d.getFecha_prueba(),
                 d.getAprobada(),
                 d.getConsecutive(),

@@ -1750,8 +1750,8 @@ public class Consultas {
         "\tMAX(CASE WHEN m1.MEASURETYPE = 8007 THEN m1.Valor_medida END) AS HC_crucero,\n" + //
         "\tMAX(CASE WHEN m1.MEASURETYPE = 8008 THEN m1.Valor_medida END) AS CO_crucero,\n" + //
         "\tMAX(CASE WHEN m1.MEASURETYPE = 8009 THEN m1.Valor_medida END) AS CO2_crucero,\n" + //
-        "\tMAX(CASE WHEN m1.MEASURETYPE = 8010 THEN m1.Valor_medida END) AS O2_crucero\n" + //
-        "\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8010 THEN m1.Valor_medida END) AS O2_crucero,\n" + //
+        "h.Numero_intentos\n" + //
         "FROM \n" + //
         "    hoja_pruebas h\n" + //
         "    INNER JOIN certificados c ON c.TESTSHEET = h.TESTSHEET\n" + //

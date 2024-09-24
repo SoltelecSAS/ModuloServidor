@@ -142,7 +142,8 @@ public class Reportes {
                         rc.getString("hc_ralenti"), 
                         rc.getString("co_ralenti"), 
                         rc.getString("co2_ralenti"), 
-                        rc.getString("O2_ralenti"));
+                        rc.getString("O2_ralenti"),
+                        rc.getString("Numero_intentos"));
                     listaDatos.add(vigia);
                 }
             }

@@ -34,6 +34,7 @@ public class ReporteVigia {
     hcRalenti,
     coRalenti,
     co2Ralenti,
-    o2Ralenti;
+    o2Ralenti,
+    numIntentos;
 
 }

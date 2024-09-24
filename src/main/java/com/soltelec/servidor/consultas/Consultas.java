@@ -1497,4 +1497,285 @@ public class Consultas {
         "    v.Modelo, tg.Nombre_gasolina, v.Cinlindraje, v.kilometraje\n"+
         "order by p.Fecha_prueba;";
     }
+
+    public static String getVigia(){
+        return
+        "SELECT \n" + //
+        "\th.con_hoja_prueba as numeroFormato,\n" + //
+        "    p.Fecha_prueba,\n" + //
+        "    p.Aprobada,\n" + //
+        "    c.CONSECUTIVE,\n" + //
+        "    c.consecutivo_runt,\n" + //
+        "    v.CARPLATE,\n" + //
+        "    s.Nombre_servicio,\n" + //
+        "    vc.Nombre_clase,\n" + //
+        "    mr.Nombre_marca,\n" + //
+        "    lv.CRLNAME,\n" + //
+        "    v.Modelo,\n" + //
+        "    v.Fecha_soat,\n" + //
+        "    tg.Nombre_gasolina,\n" + //
+        "    v.Tiempos_motor,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (7003, 7004, 7005)\n" + //
+        "            AND p2.Tipo_prueba_for = 7\n" + //
+        "    ) AS ruido,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (2014, 2024)\n" + //
+        "    ) AS intensidad_luz_der,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (2031)\n" + //
+        "    ) AS intensidad_luz_izq,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (2040, 2013)\n" + //
+        "    ) AS inclinacion_luz_der,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (2044)\n" + //
+        "    ) AS inclinacion_luz_izq,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (2011)\n" + //
+        "    ) AS suma_intensidades,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (6016)\n" + //
+        "    ) AS delantera_derecha,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (6020)\n" + //
+        "    ) AS delantera_izquierda,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (6017)\n" + //
+        "    ) AS trasera_derecha,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (6021)\n" + //
+        "    ) AS trasera_izquierda,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5024)\n" + //
+        "    ) AS eficacia_total,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5036)\n" + //
+        "    ) AS eficacia_auxiliar,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5008)\n" + //
+        "    ) AS fuerza_eje_der_1,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5012)\n" + //
+        "    ) AS fuerza_eje_izq_1,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5009)\n" + //
+        "    ) AS fuerza_eje_der_2,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5013)\n" + //
+        "    ) AS fuerza_eje_izq_2,\n" + //
+        "    \n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5000)\n" + //
+        "    ) AS peso_eje_der_1,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5004)\n" + //
+        "    ) AS peso_eje_izq_1,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5001)\n" + //
+        "    ) AS peso_eje_der_2,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (5005)\n" + //
+        "    ) AS peso_eje_izq_2,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (4000)\n" + //
+        "    ) AS desviacion_eje_1,\n" + //
+        "    \n" + //
+        "    (\n" + //
+        "        SELECT MAX(m2.Valor_medida)\n" + //
+        "        FROM pruebas p2\n" + //
+        "        LEFT JOIN medidas m2 ON p2.Id_Pruebas = m2.TEST\n" + //
+        "        WHERE \n" + //
+        "            p2.hoja_pruebas_for = h.TESTSHEET\n" + //
+        "            AND m2.MEASURETYPE IN (4001)\n" + //
+        "    ) AS desviacion_eje_2,\n" + //
+        "    \n" + //
+        "    v.diseño,\n" + //
+        "    \n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8006 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8022 AND v.Tiempos_motor = 2 THEN m1.Valor_medida \n" + //
+        "\t\tEND) AS temperatura_motor,\n" + //
+        "        \n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8005 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8028 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS rpm_ralenti,\n" + //
+        "    \n" + //
+        "    MAX(CASE \n" + //
+        "            WHEN m1.MEASURETYPE = 8001 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "            WHEN m1.MEASURETYPE = 8018 AND v.Tiempos_motor = 2 THEN m1.Valor_medida\n" + //
+        "        END) AS hc_ralenti,\n" + //
+        "    \n" + //
+        "    MAX(CASE \n" + //
+        "            WHEN m1.MEASURETYPE = 8002 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "            WHEN m1.MEASURETYPE = 8020 AND v.Tiempos_motor = 2 THEN m1.Valor_medida\n" + //
+        "        END) AS co_ralenti,\n" + //
+        "    \n" + //
+        "    MAX(CASE \n" + //
+        "            WHEN m1.MEASURETYPE = 8003 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "            WHEN m1.MEASURETYPE = 8019 AND v.Tiempos_motor = 2 THEN m1.Valor_medida\n" + //
+        "        END) AS co2_ralenti,\n" + //
+        "    \n" + //
+        "    MAX(CASE \n" + //
+        "            WHEN m1.MEASURETYPE = 8004 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "            WHEN m1.MEASURETYPE = 8021 AND v.Tiempos_motor = 2 THEN m1.Valor_medida\n" + //
+        "        END) AS O2_ralenti,\n" + //
+        "        \n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8011 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8029 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS rpm_crucero,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8007 THEN m1.Valor_medida END) AS HC_crucero,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8008 THEN m1.Valor_medida END) AS CO_crucero,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8009 THEN m1.Valor_medida END) AS CO2_crucero,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8010 THEN m1.Valor_medida END) AS O2_crucero\n" + //
+        "\n" + //
+        "FROM \n" + //
+        "    hoja_pruebas h\n" + //
+        "    INNER JOIN certificados c ON c.TESTSHEET = h.TESTSHEET\n" + //
+        "    INNER JOIN vehiculos v ON v.CAR = h.Vehiculo_for\n" + //
+        "    INNER JOIN clases_vehiculo vc ON vc.CLASS = v.CLASS\n" + //
+        "    INNER JOIN servicios s ON s.SERVICE = v.SERVICE\n" + //
+        "    INNER JOIN tipos_gasolina tg ON tg.FUELTYPE = v.FUELTYPE\n" + //
+        "    LEFT JOIN pruebas p ON h.TESTSHEET = p.hoja_pruebas_for\n" + //
+        "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
+        "    INNER JOIN marcas mr ON mr.CARMARK = v.CARMARK\n" + //
+        "    INNER JOIN lineas_vehiculos lv ON lv.CARLINE = v.CARLINE\n" + //
+        "\t\n" + //
+        "WHERE \n" + //
+        "    DATE(h.Fecha_ingreso_vehiculo) BETWEEN ? AND ?\n" + //
+        "    AND h.preventiva = 'N'\n" + //
+        "    AND h.Finalizada = 'Y'\n" + //
+        "    AND h.estado_sicov = 'SINCRONIZADO'\n" + //
+        "    AND p.Tipo_prueba_for IN (8)\n" + //
+        "    AND v.diseño in('Convencional','Scooter')\n" + //
+        "\n" + //
+        "GROUP BY \n" + //
+        "    p.Id_Pruebas\n" + //
+        "\n" + //
+        "ORDER BY \n" + //
+        "    p.Fecha_prueba;";
+    }
 }

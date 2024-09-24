@@ -48,6 +48,7 @@ import com.soltelec.servidor.dtos.reporte_ntc5365.PropietarioNtC5365;
 import com.soltelec.servidor.dtos.reporte_ntc5365.ResultadosInspeccionNtc5365;
 import com.soltelec.servidor.dtos.reporte_ntc5365.SoftwareEquipoNtc5365;
 import com.soltelec.servidor.dtos.reporte_ntc5365.VehiculoNtc5365;
+import com.soltelec.servidor.dtos.reporte_super_vigia.ReporteVigia;
 import com.soltelec.servidor.dtos.reportes_ntcs.DatosGeneralesNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.EquiposSoftDieselNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.EquiposSoftOttoNtc;
@@ -86,6 +87,63 @@ public class Reportes {
                     //Colocara datos segun cada columna que encuentre
                     Dagma dagma = crearDagmaDesdeResultSet(rc);
                     listaDatos.add(dagma);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        //Genera una lista con todos los datos
+        return listaDatos;
+    }
+
+    public static List<ReporteVigia> getVigia(Date fechaInicio, Date fechaFin) {
+
+        List<ReporteVigia> listaDatos = new ArrayList<>();
+        String consulta = Consultas.getVigia();
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+            PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+            //añadir parametros de la consulta (los que aparecen como ? en la consulta)
+            consultaDagma.setDate(1, new java.sql.Date(fechaInicio.getTime()));//selecciona el primer ? que encuentra
+            consultaDagma.setDate(2, new java.sql.Date(fechaFin.getTime()));//selecciona el segundo ? que encuentra
+
+            //rc representa el resultado de la consulta
+            try (ResultSet rc = consultaDagma.executeQuery()) {
+                while (rc.next()) {
+                    //Colocara datos segun cada columna que encuentre
+                    ReporteVigia vigia = new ReporteVigia(
+                        rc.getString("numeroFormato"), 
+                        rc.getString("Fecha_prueba"), 
+                        rc.getString("Aprobada").equalsIgnoreCase("Y") ? "APROBADA" : "REPROBADA", 
+                        rc.getString("CONSECUTIVE"), 
+                        rc.getString("consecutivo_runt"), 
+                        rc.getString("CARPLATE"), 
+                        rc.getString("Nombre_servicio"), 
+                        rc.getString("Nombre_clase"), 
+                        rc.getString("Nombre_marca"), 
+                        rc.getString("CRLNAME"), 
+                        rc.getString("Modelo"), 
+                        rc.getString("Fecha_soat"), 
+                        rc.getString("Nombre_gasolina"), 
+                        rc.getString("Tiempos_motor"), 
+                        rc.getString("ruido"), 
+                        rc.getString("intensidad_luz_der"), 
+                        rc.getString("inclinacion_luz_der"), 
+                        rc.getString("eficacia_total"), 
+                        rc.getString("fuerza_eje_der_1"), 
+                        rc.getString("fuerza_eje_der_2"), 
+                        rc.getString("peso_eje_der_1"), 
+                        rc.getString("peso_eje_der_2"), 
+                        rc.getString("diseño"), 
+                        rc.getString("temperatura_motor"), 
+                        rc.getString("rpm_ralenti"), 
+                        rc.getString("hc_ralenti"), 
+                        rc.getString("co_ralenti"), 
+                        rc.getString("co2_ralenti"), 
+                        rc.getString("O2_ralenti"));
+                    listaDatos.add(vigia);
                 }
             }
         } catch (SQLException e) {

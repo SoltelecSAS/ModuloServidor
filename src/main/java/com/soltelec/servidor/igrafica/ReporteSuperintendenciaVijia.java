@@ -5,8 +5,11 @@
  */
 package com.soltelec.servidor.igrafica;
 
+import com.soltelec.servidor.consultas.Reportes;
 import com.soltelec.servidor.dao.CertificadosJpaController;
 import com.soltelec.servidor.dao.HojaPruebasJpaController;
+import com.soltelec.servidor.dtos.reporte_dagma.Dagma;
+import com.soltelec.servidor.dtos.reporte_super_vigia.ReporteVigia;
 import com.soltelec.servidor.model.Certificados;
 import com.soltelec.servidor.model.HojaPruebas;
 import com.soltelec.servidor.model.Medidas;
@@ -176,10 +179,176 @@ public class ReporteSuperintendenciaVijia extends javax.swing.JInternalFrame {
         modeloGases.addColumn("Resultado");//7
     }
 
+
+    private void fillData(Date fInicial, Date fFinal) {
+        List<ReporteVigia> listaDatos = Reportes.getVigia(fInicial, fFinal);
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                d.getNumeroFormato(),
+                d.getFecha_prueba(),
+                d.getAprobada(),
+                d.getConsecutive(),
+                d.getConsecutivo_runt(),
+                d.getCarplate(),
+                d.getNombreServicio(),
+                d.getNombreClase(),
+                d.getNombreMarca(),
+                d.getLinea(),
+                d.getModelo(),
+                d.getFechaSoat(),
+                d.getNombreGasolina(),
+                d.getTiemposMotor(),
+                d.getRuido()
+            };
+            modeloInfoVehiculo.addRow(fila);
+        });
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                d.getIntensidad_luz_der(),
+                "",
+                d.getInclinacion_luz_der(),
+                "",
+                ""
+            };
+            modeloLuces.addRow(fila);
+        });
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                "",
+                "",
+                "",
+                ""
+            };
+            modeloSuspension.addRow(fila);
+        });
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                d.getEficacia_total(),
+                "",
+                d.getFuerza_eje_der_1(),
+                d.getFuerza_eje_der_2(),
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                d.getPeso_eje_der_1(),
+                d.getPeso_eje_der_2(),
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+
+            };
+            modeloFrenos.addRow(fila);
+        });
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                "",
+                "",
+                "",
+                "",
+                ""
+            };
+            modeloDesviacion.addRow(fila);
+        });
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                "",
+                "",
+                ""
+            };
+            modeloTaximetro.addRow(fila);
+        });
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                d.getTemp_motor(),
+                "",
+                d.getRpmRalenti(),
+                d.getCoRalenti(),
+                d.getCo2Ralenti(),
+                d.getO2Ralenti(),
+                d.getHcRalenti(),
+                "",
+                "",
+                "",
+                ""
+            };
+            modeloGasesOtto.addRow(fila);
+        });
+
+        modeloGases.addColumn("Rpm Ralentí Diesel");//0
+        modeloGases.addColumn("Rpm Gobernada");//1
+        modeloGases.addColumn("Temperatura (Diesel)");//2
+        modeloGases.addColumn("Opacidad Ciclo 1");//3
+        modeloGases.addColumn("Opacidad Ciclo 2");//4
+        modeloGases.addColumn("Opacidad Ciclo 3");//5
+        modeloGases.addColumn("Opacidad Ciclo 4");//6
+        modeloGases.addColumn("Resultado");//7
+
+        listaDatos.stream().forEach(d->{
+            Object [] fila ={
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            };
+            modeloGasesOtto.addRow(fila);
+        });
+
+        tblInfoVehiculos.setModel(modeloInfoVehiculo);
+        tblInfoVehiculos.setEnabled(false);
+        System.out.println("RESUMEN DE LNG TBL ");
+        System.out.println("LNG LUCES  " + modeloLuces.getRowCount());
+        tblPruebaLuces.setModel(modeloLuces);
+        tblPruebaLuces.setEnabled(false);
+        tblPruebaSuspension.setModel(modeloSuspension);
+        tblPruebaSuspension.setEnabled(false);
+        System.out.println("LNG SUSPENSION  " + modeloSuspension.getRowCount());
+        tblPruebaFreno.setModel(modeloFrenos);
+        tblPruebaFreno.setEnabled(false);
+        System.out.println("LNG FRENOS  " + modeloFrenos.getRowCount());
+        tblPruebaDesviacion.setModel(modeloDesviacion);
+        tblPruebaDesviacion.setEnabled(false);
+        System.out.println("LNG DESVIACION  " + modeloDesviacion.getRowCount());
+        tblPruebaTaximetro.setModel(modeloTaximetro);
+        tblPruebaTaximetro.setEnabled(false);
+        System.out.println("LNG TAXIMETRO  " + modeloTaximetro.getRowCount());
+        tblPruebaGasesOtto.setModel(modeloGasesOtto);
+        tblPruebaGasesOtto.setEnabled(false);
+        System.out.println("LNG GASESOTTO  " + modeloGasesOtto.getRowCount());
+        tblPruebaGasesDiesel.setModel(modeloGases);
+        tblPruebaGasesDiesel.setEnabled(false);
+        System.out.println("LNG DIESEL  " + modeloGases.getRowCount());
+    }
+
     /**
      * Carga los datos en la tabla
      */
-    private void fillData(Date fechaInicial, Date fechaFinal) {
+    private void fillDataA(Date fechaInicial, Date fechaFinal) {
         initModels();
         sdf = new SimpleDateFormat("dd/MM/yyyy");
         HojaPruebasJpaController hpjc = new HojaPruebasJpaController();

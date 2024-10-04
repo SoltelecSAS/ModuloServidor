@@ -172,4 +172,5 @@
             <url>file:${project.basedir}/lib</url>
         </repository>
     </repositories>
+    <name>servidor</name>
 </project>

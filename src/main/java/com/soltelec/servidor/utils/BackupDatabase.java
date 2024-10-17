@@ -50,7 +50,7 @@ public class BackupDatabase {
               
                  
                 dbName = Conexion.getBaseDatos();
-                port =  properties.getProperty("port");
+                port =  Conexion.getPuerto();
                 dbUser = Conexion.getUsuario();
                 //Este usuario es usado para la version de mysql57 ya que no tiene password
                 ubackup = Conexion.getUsuario();
@@ -119,7 +119,7 @@ public class BackupDatabase {
             try {
                 properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
                 dbName = Conexion.getBaseDatos();
-                port = properties.getProperty("port");
+                port = Conexion.getPuerto();
                 dbUser = Conexion.getUsuario();
                 dbPass = Conexion.getContrasena();
                  

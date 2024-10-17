@@ -23,9 +23,9 @@ public class FrmImportBackup extends javax.swing.JFrame {
      */
     public FrmImportBackup() {
         initComponents();
-        jTextField1.setText("nombre base datos");
-        jTextField1.setEnabled(false);
-        jRadioButton1.setSelected(true);
+        jTextField1.setText("Copia");
+        jRadioButton2.setSelected(true);
+         jTextField1.setEnabled(true);
     }
 
     /**
@@ -39,13 +39,16 @@ public class FrmImportBackup extends javax.swing.JFrame {
 
         jFrame1 = new javax.swing.JFrame();
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
         jTextField1 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-
-        
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
         jFrame1.getContentPane().setLayout(jFrame1Layout);
@@ -60,16 +63,8 @@ public class FrmImportBackup extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setText("Predeterminada");
-        jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton1ActionPerformed(evt);
-            }
-        });
-
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("Desarrollo");
+        jRadioButton2.setText("Copia");
         jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButton2ActionPerformed(evt);
@@ -83,7 +78,7 @@ public class FrmImportBackup extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Nombre DB:");
+        jLabel1.setText("Nombre Copia DB:");
 
         jButton1.setText("Seleccionar backup");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -92,40 +87,70 @@ public class FrmImportBackup extends javax.swing.JFrame {
             }
         });
 
+        jLabel2.setText("Por favor digite el nombre de la copia ");
+
+        jLabel4.setText("sin espacios o caracteres especiales.");
+
+        jLabel5.setText("Esta copia se va a crear como una nueva base de datos");
+
+        jLabel6.setText("diferente a \"db_cda\" dentro del servidor con el nombre");
+
+        jLabel7.setText("que usted digite aqui y seleccionando el backup correspondiente.");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jRadioButton2)
-                            .addComponent(jRadioButton1)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(92, 92, 92)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(28, Short.MAX_VALUE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel1)
+                            .addGap(42, 42, 42)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(24, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(132, 132, 132))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jRadioButton2)
+                        .addGap(14, 14, 14))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(33, 33, 33)
-                .addComponent(jRadioButton1)
-                .addGap(18, 18, 18)
+                .addGap(19, 19, 19)
                 .addComponent(jRadioButton2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addComponent(jLabel3)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addGap(40, 40, 40)
+                .addGap(18, 18, 18)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addGap(22, 22, 22))
         );
 
         pack();
@@ -135,24 +160,11 @@ public class FrmImportBackup extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jTextField1ActionPerformed
 
-    private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
-
-        if (jRadioButton1.isSelected()) {
-            jTextField1.setEnabled(false); // Desactiva el JTextField si jRadioButton1 está seleccionado
-            edit = false;
-        } else {
-            jTextField1.setEnabled(true); // Activa el JTextField si jRadioButton1 no está seleccionado
-            edit = true;
-        }
-    }//GEN-LAST:event_jRadioButton1ActionPerformed
-
     private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
         if (jRadioButton2.isSelected()) {   
             jTextField1.setEnabled(true); // Activa el JTextField si jRadioButton2 está seleccionado
-            edit = true;
         } else {
             jTextField1.setEnabled(false); // Desactiva el JTextField si jRadioButton2 no está seleccionado
-            edit = false;
         }
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
@@ -167,11 +179,7 @@ public class FrmImportBackup extends javax.swing.JFrame {
         Thread backupThread = new Thread(() -> {
             // Realizar operaciones relacionadas con Swing en el EDT
             SwingUtilities.invokeLater(() -> {
-                if (!edit) {
-                    jTextField1.setText("respaldo");
-                }
-
-                if ((edit && jTextField1.getText().isEmpty()) || (edit && jTextField1.getText().equals("db_cda"))) {
+                if (( jTextField1.getText().isEmpty()) || (jTextField1.getText().equals("db_cda"))) {
                     JOptionPane.showMessageDialog(null, "Coloque un nombre válido para la base de datos", "Mensaje", JOptionPane.ERROR_MESSAGE);
                     throw new RuntimeException("No colocó un nombre en la base de datos o coloco db_cda que esta prohibido");
                 }
@@ -188,7 +196,10 @@ public class FrmImportBackup extends javax.swing.JFrame {
                 dialog.dispose();
                 // Muestra un cuadro de diálogo después de que el respaldo haya terminado
                 if (result == 0) {
-                    JOptionPane.showMessageDialog(null, "Terminado", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Terminado.\n Cuando ingrese a la base de datos, \nencontrara una base de datos nueva junto a 'db_cda'", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                }else if(result == 1){
+                    JOptionPane.showMessageDialog(null, "Importacion cancelada. \nCerraremos el programa por seguridad.", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
                 }else{
                     JOptionPane.showMessageDialog(null, "Este computador debe tener instalado el mysql server y tener configurada la variable de entorno (C:\\Program Files\\MySQL\\MySQL Server x.x\\bin) para poder realizar esta accion. Contacte con soporte", "Mensaje", JOptionPane.ERROR_MESSAGE);
                 }
@@ -244,9 +255,13 @@ public class FrmImportBackup extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JFrame jFrame1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JRadioButton jRadioButton1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JTextField jTextField1;
-    private boolean edit = false;
     // End of variables declaration//GEN-END:variables
 }

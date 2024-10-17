@@ -10,12 +10,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.dtos.DatosCda;
+import com.soltelec.servidor.dtos.Abortos.Abortos;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.CorantioquiaCornare;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosPruebaCorantioquia;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosVehiculoCorantioquia;
@@ -97,6 +99,45 @@ public class Reportes {
         return listaDatos;
     }
 
+    public static List<Abortos> getAbortos(Date fechaInicio, Date fechaFin) {
+
+        List<Abortos> listaDatos = new ArrayList<>();
+        String consulta = Consultas.getAbortos();
+
+        // Formateador para la fecha en el formato que deseas
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+            PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+            // Añadir parámetros de la consulta (los que aparecen como ? en la consulta)
+            consultaDagma.setDate(1, new java.sql.Date(fechaInicio.getTime())); // Selecciona el primer ?
+            consultaDagma.setDate(2, new java.sql.Date(fechaFin.getTime())); // Selecciona el segundo ?
+
+            // rc representa el resultado de la consulta
+            try (ResultSet rc = consultaDagma.executeQuery()) {
+                while (rc.next()) {
+                    // Formatear la fecha antes de agregarla al objeto
+                    String fechaAbortoFormateada = dateFormat.format(rc.getTimestamp("Fecha_aborto"));
+                    
+                    // Colocar datos según cada columna que encuentres
+                    Abortos aborto = new Abortos(
+                        rc.getString("Nombre_tipo_prueba"), 
+                        fechaAbortoFormateada, 
+                        rc.getString("observaciones"),
+                        rc.getString("Nombre_usuario"));
+                        
+                    listaDatos.add(aborto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Genera una lista con todos los datos
+        return listaDatos;
+    }
+
     public static List<ReporteVigia> getVigia(Date fechaInicio, Date fechaFin) {
 
         List<ReporteVigia> listaDatos = new ArrayList<>();
@@ -114,7 +155,9 @@ public class Reportes {
                 while (rc.next()) {
                     //Colocara datos segun cada columna que encuentre
                     ReporteVigia vigia = new ReporteVigia(
-                        rc.getString("numeroFormato"), 
+                        !rc.getString("Aprobada").equalsIgnoreCase("Y") && rc.getInt("Numero_intentos")<3? 
+                            rc.getString("numeroFormato")+"-1" : 
+                            rc.getString("numeroFormato")+"-"+rc.getString("Numero_intentos"),
                         rc.getString("Fecha_prueba"), 
                         rc.getString("Aprobada").equalsIgnoreCase("Y") ? "APROBADA" : "REPROBADA", 
                         rc.getString("CONSECUTIVE"), 
@@ -125,7 +168,7 @@ public class Reportes {
                         rc.getString("Nombre_marca"), 
                         rc.getString("CRLNAME"), 
                         rc.getString("Modelo"), 
-                        rc.getString("Fecha_soat"), 
+                        rc.getString("Fecha_registro"), 
                         rc.getString("Nombre_gasolina"), 
                         rc.getString("Tiempos_motor"), 
                         rc.getString("ruido"), 

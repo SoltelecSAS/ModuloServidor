@@ -20,21 +20,49 @@ import java.util.logging.Logger;
  */
 public class ReadFiles {
 
-        public static List<Archivo> cargarRegistros() {
+    public static List<Archivo> cargarRegistros() {
 
         try {
             List<Archivo> archivos = new ArrayList<>();
-
+    
             Properties p = new Properties();
             p.load(CargarArchivos.cargarArchivo("conexion.properties"));
-
-            File[] listOfFiles = new File(p.getProperty("directoriobackup")).listFiles();
+    
+            // Obtener el directorio de backup desde las propiedades
+            File backupDirectory = new File(p.getProperty("directoriobackup"));
+    
+            // Verificar si el directorio no existe
+            if (!backupDirectory.exists()) {
+                // Intentar crear el directorio si no existe
+                if (backupDirectory.mkdirs()) {
+                    System.out.println("El directorio de backup no existía, pero se creó correctamente.");
+                } else {
+                    throw new IOException("No se pudo crear el directorio de backup: " + p.getProperty("directoriobackup"));
+                }
+            }
+    
+            // Verificar que sea un directorio válido
+            if (!backupDirectory.isDirectory()) {
+                throw new IOException("La ruta especificada no es un directorio: " + p.getProperty("directoriobackup"));
+            }
+    
+            // Listar los archivos del directorio
+            File[] listOfFiles = backupDirectory.listFiles();
+    
+            // Verificar si listOfFiles es nulo (directorio vacío o error al acceder)
+            if (listOfFiles == null) {
+                System.out.println("No se encontraron archivos en el directorio de backup.");
+                return archivos; // Retornar una lista vacía si no hay archivos
+            }
+    
+            // Agregar archivos a la lista
             for (File file : listOfFiles) {
                 if (file.isFile()) {
                     archivos.add(new Archivo(file.getName(), file.getPath()));
                 }
             }
-            return (archivos);
+            
+            return archivos;
         } catch (IOException ex) {
             Logger.getLogger(ReadFiles.class.getName()).log(Level.SEVERE, null, ex);
             return null;

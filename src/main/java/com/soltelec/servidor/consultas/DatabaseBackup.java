@@ -1,9 +1,11 @@
 package com.soltelec.servidor.consultas;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -46,49 +48,75 @@ public class DatabaseBackup {
         
         // Formatear la fecha en el formato deseado
         String fechaActualStr = fechaActual.format(formatter);
-
+    
         // Obtener la ruta del directorio actual
         String currentDirectory = System.getProperty("user.dir");
-
+    
         // Nombre del archivo de backup
         String backupFileName = "backup.bat";
-
+    
         // Ruta completa del archivo de backup
         String backupPath = currentDirectory + File.separator + backupFileName;
-
-        // Crear el contenido del archivo de lote
-        String batchContent = String.format("mysqldump --defaults-extra-file=mysql.cnf --host=%s --port=%s %s > "+fechaActualStr+".sql",
+    
+        // Crear el contenido del archivo de lote con --single-transaction
+        String batchContent = String.format(
+                "mysqldump --defaults-extra-file=mysql.cnf --host=%s --port=%s --single-transaction %s > " + fechaActualStr + ".sql",
                 dbHost, dbPort, dbName);
-
+    
+        BufferedWriter writer = null;
+        String mysqlCnfPath = null;
         try {
             // Crear el archivo de opciones de configuración
-            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, "'"+Conexion.getContrasena()+"'");
-            String mysqlCnfPath = currentDirectory + File.separator + "mysql.cnf";
-            BufferedWriter writer = new BufferedWriter(new FileWriter(mysqlCnfPath));
+            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, "'" + Conexion.getContrasena() + "'");
+            mysqlCnfPath = currentDirectory + File.separator + "mysql.cnf";
+            writer = new BufferedWriter(new FileWriter(mysqlCnfPath));
             writer.write(mysqlCnfContent);
             writer.close();
-
+    
             // Crear el archivo de lote
             writer = new BufferedWriter(new FileWriter(backupPath));
             writer.write(batchContent);
             writer.close();
-
+    
             // Ejecutar el archivo de lote sin abrir una nueva ventana de cmd
             Process process = Runtime.getRuntime().exec("cmd /c " + backupPath);
-
+    
+            // Crear hilos para leer el flujo de salida y error del proceso
+            new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println("OUTPUT mysqlDump: " + line); // Muestra la salida del proceso
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+    
+            new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.err.println("ERROR mysqlDump: " + line); // Muestra los errores del proceso
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+    
             // Esperar a que el proceso termine
             int exitCode = process.waitFor();
-
+    
             // Verificar el resultado
             if (exitCode == 0) {
                 logger.info("Backup creado exitosamente");
             } else {
                 logger.info("Error al crear el backup. Código de salida: {}", exitCode);
             }
-
+    
             // Eliminar el archivo mysql.cnf después de que se haya completado el backup
             File mysqlCnfFile = new File(mysqlCnfPath);
-            
+    
             if (mysqlCnfFile.exists()) {
                 @SuppressWarnings("java:S4042")
                 boolean deleted = mysqlCnfFile.delete();
@@ -98,16 +126,32 @@ public class DatabaseBackup {
                     logger.info("No se pudo eliminar el archivo mysql.cnf");
                 }
             }
-
+    
             return exitCode;
-
+    
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
+        } finally {
+            // Asegurarse de cerrar el writer y eliminar el archivo mysql.cnf si ocurre un error
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (mysqlCnfPath != null) {
+                File mysqlCnfFile = new File(mysqlCnfPath);
+                if (mysqlCnfFile.exists()) {
+                    mysqlCnfFile.delete();
+                }
+            }
         }
-
+    
         return null;
     }
+    
 
     public static int importBackup(String backupFilePath, String dbName) {
         Integer exitCode = null;
@@ -173,6 +217,11 @@ public class DatabaseBackup {
 
     public static Integer importBackup(String dbName) {
         String ubicacion = selectPathBackup();
+
+        // Si la ubicación es nula o vacía, significa que el usuario canceló la selección.
+        if (ubicacion == null || ubicacion.isEmpty()) {
+            return 1;  // Retornar 1 si se cancela.
+        }
 
         String consulta = "SHOW databases";
         boolean isDbExist = false;

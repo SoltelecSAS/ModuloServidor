@@ -8,6 +8,8 @@ package com.soltelec.servidor.utils;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -51,5 +53,16 @@ public class UtilPropiedades {
         String url = UtilPropiedades.cargarURLPersistence("propiedades.properties");
         map.put("javax.persistence.jdbc.url", url);
         return map;
+    }
+
+    public static Map<String, String> loadEnv() throws IOException {
+        Map<String, String> envMap = new HashMap<>();
+        Files.lines(Paths.get(".env")).forEach(line -> {
+            String[] keyValue = line.split("=", 2);
+            if (keyValue.length == 2) {
+                envMap.put(keyValue[0].trim(), keyValue[1].trim());
+            }
+        });
+        return envMap;
     }
 }

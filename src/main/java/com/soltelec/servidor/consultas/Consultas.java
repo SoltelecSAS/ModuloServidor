@@ -1512,7 +1512,7 @@ public class Consultas {
         "    mr.Nombre_marca,\n" + //
         "    lv.CRLNAME,\n" + //
         "    v.Modelo,\n" + //
-        "    v.Fecha_soat,\n" + //
+        "    v.Fecha_registro,\n" + //
         "    tg.Nombre_gasolina,\n" + //
         "    v.Tiempos_motor,\n" + //
         "    \n" + //
@@ -1777,5 +1777,22 @@ public class Consultas {
         "\n" + //
         "ORDER BY \n" + //
         "    p.Fecha_prueba;";
+    }
+
+    public static String getAbortos(){
+        return
+        "SELECT \n" + //
+        "tp.Nombre_tipo_prueba, p.Fecha_aborto, p.observaciones, u.Nombre_usuario\n" + //
+        "FROM pruebas p \n" + //
+        "INNER JOIN tipo_prueba tp ON tp.TESTTYPE = p.Tipo_prueba_for\n" + //
+        "INNER JOIN usuarios u ON u.GEUSER = p.usuario_for\n" + //
+        "where p.Abortada <> 'N' \n" + //
+        "AND p.observaciones is not null \n" + //
+        "AND p.Fecha_aborto not like '%192.168%'\n" + //
+        "AND p.Fecha_aborto not like '%;%'\n" + //
+        "AND p.Fecha_aborto <> ''\n" + //
+        "AND p.Fecha_prueba between ? and ?\n" + //
+        "group by p.Id_pruebas\n" + //
+        "order by p.Fecha_aborto;";
     }
 }

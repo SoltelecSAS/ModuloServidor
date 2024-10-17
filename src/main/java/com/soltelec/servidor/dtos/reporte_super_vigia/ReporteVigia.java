@@ -17,7 +17,7 @@ public class ReporteVigia {
     nombreMarca,
     linea,
     modelo,
-    fechaSoat,
+    fechaMatricula,
     nombreGasolina,
     tiemposMotor,
     ruido,

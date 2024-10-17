@@ -102,11 +102,17 @@ public class Principal extends javax.swing.JFrame {
         menu_usuario = new javax.swing.JMenu();
         jMenuUsuariosConsulta = new javax.swing.JMenuItem();
         mnuGestionEquipos = new javax.swing.JMenuItem();
+        jMenuItem15 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuSicov1 = new javax.swing.JMenuItem();
         jMenuSicov = new javax.swing.JMenuItem();
         jMenuLlantas = new javax.swing.JMenuItem();
         jMenuLlantas1 = new javax.swing.JMenuItem();
-        jMenuSicov1 = new javax.swing.JMenuItem();
+        jMenu8 = new javax.swing.JMenu();
+        jMenuNormasDefectos = new javax.swing.JMenuItem();
+        jMenuNormasTiposMedida = new javax.swing.JMenuItem();
+        jMenuNormasPermisibles = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jMenu7 = new javax.swing.JMenu();
         mnuRGeneral = new javax.swing.JMenuItem();
         jMenuItem11 = new javax.swing.JMenuItem();
@@ -121,6 +127,8 @@ public class Principal extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        jMenu10 = new javax.swing.JMenu();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
         jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem7 = new javax.swing.JMenuItem();
         jMenuItem9 = new javax.swing.JMenuItem();
@@ -137,11 +145,9 @@ public class Principal extends javax.swing.JFrame {
         jMenuItem23 = new javax.swing.JMenuItem();
         jMenuItem21 = new javax.swing.JMenuItem();
         mnuRGeneral2 = new javax.swing.JMenuItem();
-        jMenu8 = new javax.swing.JMenu();
-        jMenuNormasDefectos = new javax.swing.JMenuItem();
-        jMenuNormasTiposMedida = new javax.swing.JMenuItem();
-        jMenuNormasPermisibles = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jMenu9 = new javax.swing.JMenu();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        jMenuNormasPermisibles2 = new javax.swing.JMenuItem();
 
         jMenuItem10.setText("jMenuItem10");
 
@@ -233,7 +239,7 @@ public class Principal extends javax.swing.JFrame {
         });
         jMenu5.add(jMenuManejoEventoCDA);
 
-        menu_marca.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
+        menu_marca.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         menu_marca.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/add.png"))); // NOI18N
         menu_marca.setText("Insertar Marca");
         menu_marca.addActionListener(new java.awt.event.ActionListener() {
@@ -271,14 +277,32 @@ public class Principal extends javax.swing.JFrame {
         });
         menu_usuario.add(mnuGestionEquipos);
 
+        jMenuItem15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/download_database.png"))); // NOI18N
+        jMenuItem15.setText("Backup (mysqlDump)");
+        jMenuItem15.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem15ActionPerformed(evt);
+            }
+        });
+        menu_usuario.add(jMenuItem15);
+
         jMenuItem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/download_database.png"))); // NOI18N
-        jMenuItem1.setText("Exportar backup");
+        jMenuItem1.setText("Backup y Restauración");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
             }
         });
         menu_usuario.add(jMenuItem1);
+
+        jMenuSicov1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/import.png"))); // NOI18N
+        jMenuSicov1.setText("Importar backup(copia de la DB)");
+        jMenuSicov1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuSicov1ActionPerformed(evt);
+            }
+        });
+        menu_usuario.add(jMenuSicov1);
 
         jMenuSicov.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/url.png"))); // NOI18N
         jMenuSicov.setText("URL sicov");
@@ -307,23 +331,47 @@ public class Principal extends javax.swing.JFrame {
         });
         menu_usuario.add(jMenuLlantas1);
 
-        jMenuSicov1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/import.png"))); // NOI18N
-        jMenuSicov1.setText("Importar backup");
-        jMenuSicov1.addActionListener(new java.awt.event.ActionListener() {
+        jMenuBar1.add(menu_usuario);
+
+        jMenu8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
+        jMenu8.setText("Normas");
+
+        jMenuNormasDefectos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_warning.png"))); // NOI18N
+        jMenuNormasDefectos.setText("Defectos");
+        jMenuNormasDefectos.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuSicov1ActionPerformed(evt);
+                jMenuNormasDefectosActionPerformed(evt);
             }
         });
-        menu_usuario.add(jMenuSicov1);
+        jMenu8.add(jMenuNormasDefectos);
 
-        jMenuBar1.add(menu_usuario);
+        jMenuNormasTiposMedida.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
+        jMenuNormasTiposMedida.setText("Tipos Medida");
+        jMenuNormasTiposMedida.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuNormasTiposMedidaActionPerformed(evt);
+            }
+        });
+        jMenu8.add(jMenuNormasTiposMedida);
+
+        jMenuNormasPermisibles.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
+        jMenuNormasPermisibles.setText("Permisibles");
+        jMenuNormasPermisibles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuNormasPermisiblesActionPerformed(evt);
+            }
+        });
+        jMenu8.add(jMenuNormasPermisibles);
+        jMenu8.add(jSeparator2);
+
+        jMenuBar1.add(jMenu8);
 
         jMenu7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
         jMenu7.setText("Reportes");
         jMenu7.setAutoscrolls(true);
 
         mnuRGeneral.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_search.png"))); // NOI18N
-        mnuRGeneral.setText("Reporte General");
+        mnuRGeneral.setText("General");
         mnuRGeneral.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnuRGeneralActionPerformed(evt);
@@ -331,7 +379,7 @@ public class Principal extends javax.swing.JFrame {
         });
         jMenu7.add(mnuRGeneral);
 
-        jMenuItem11.setText("Reporte Bogota");
+        jMenuItem11.setText("Bogota");
         jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem11ActionPerformed(evt);
@@ -340,7 +388,7 @@ public class Principal extends javax.swing.JFrame {
         jMenu7.add(jMenuItem11);
 
         mnuReporteMotos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/pages.png"))); // NOI18N
-        mnuReporteMotos.setText("Reporte Motos (Bogotá)");
+        mnuReporteMotos.setText("Motos (Bogotá)");
         mnuReporteMotos.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnuReporteMotosActionPerformed(evt);
@@ -402,7 +450,7 @@ public class Principal extends javax.swing.JFrame {
         });
         jMenu7.add(menuSuperVijia);
 
-        jMenuItem2.setText("Reporte Cortolima");
+        jMenuItem2.setText("Cortolima");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem2ActionPerformed(evt);
@@ -410,7 +458,7 @@ public class Principal extends javax.swing.JFrame {
         });
         jMenu7.add(jMenuItem2);
 
-        jMenuItem4.setText("Reporte CVG");
+        jMenuItem4.setText("CVG");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem4ActionPerformed(evt);
@@ -432,75 +480,82 @@ public class Principal extends javax.swing.JFrame {
         jMenu7.add(jMenuItem5);
         jMenu7.add(jSeparator3);
 
+        jMenuBar1.add(jMenu7);
+
+        jMenu10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
+        jMenu10.setText("Reportes2");
+        jMenu10.setAutoscrolls(true);
+        jMenu10.add(jSeparator5);
+
         jMenuItem6.setText("Tabla Equipo CAR");
         jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem6ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem6);
+        jMenu10.add(jMenuItem6);
 
-        jMenuItem7.setText("Reporte(C.A.R.) Gasolina");
+        jMenuItem7.setText("(C.A.R.) Gasolina");
         jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem7ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem7);
+        jMenu10.add(jMenuItem7);
 
-        jMenuItem9.setText("Reporte Medellin(4983)");
+        jMenuItem9.setText("Medellin(4983)");
         jMenuItem9.setToolTipText("");
         jMenuItem9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem9ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem9);
+        jMenu10.add(jMenuItem9);
         jMenuItem9.getAccessibleContext().setAccessibleName("ReportesMedellin");
 
-        jMenuItem18.setText("Reporte Medellin(5365)");
+        jMenuItem18.setText("Medellin(5365)");
         jMenuItem18.setToolTipText("");
         jMenuItem18.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem18ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem18);
+        jMenu10.add(jMenuItem18);
 
-        jMenuItem19.setText("Reporte Medellin(4231)");
+        jMenuItem19.setText("Medellin(4231)");
         jMenuItem19.setToolTipText("");
         jMenuItem19.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem19ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem19);
+        jMenu10.add(jMenuItem19);
 
-        jMenuItem8.setText("Reporte(C.A.R.) Diesel");
+        jMenuItem8.setText("(C.A.R.) Diesel");
         jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem8ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem8);
+        jMenu10.add(jMenuItem8);
 
-        jMenuItem12.setText("Reporte DAGMA");
+        jMenuItem12.setText("DAGMA");
         jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem12ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem12);
+        jMenu10.add(jMenuItem12);
 
-        jMenuItem14.setText("Reporte CORNARE");
+        jMenuItem14.setText("CORNARE");
         jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem14ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem14);
+        jMenu10.add(jMenuItem14);
 
-        jMenuItem13.setText("Reporte CORANTIOQUIA");
+        jMenuItem13.setText("CORANTIOQUIA");
         jMenuItem13.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jMenuItem13MouseClicked(evt);
@@ -511,7 +566,7 @@ public class Principal extends javax.swing.JFrame {
                 jMenuItem13ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem13);
+        jMenu10.add(jMenuItem13);
 
         jMenuItem20.setText("Divecol (Motos)");
         jMenuItem20.addActionListener(new java.awt.event.ActionListener() {
@@ -519,16 +574,16 @@ public class Principal extends javax.swing.JFrame {
                 jMenuItem20ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem20);
+        jMenu10.add(jMenuItem20);
 
         RDivecol.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
-        RDivecol.setText("Reporte Divecol");
+        RDivecol.setText("Divecol");
         RDivecol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 RDivecolActionPerformed(evt);
             }
         });
-        jMenu7.add(RDivecol);
+        jMenu10.add(RDivecol);
 
         mnuRGeneral1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_search.png"))); // NOI18N
         mnuRGeneral1.setText("Correcion de oxigeno");
@@ -537,15 +592,15 @@ public class Principal extends javax.swing.JFrame {
                 mnuRGeneral1ActionPerformed(evt);
             }
         });
-        jMenu7.add(mnuRGeneral1);
+        jMenu10.add(mnuRGeneral1);
 
-        jMenuItem16.setText("Reporte CVC");
+        jMenuItem16.setText("CVC");
         jMenuItem16.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem16ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem16);
+        jMenu10.add(jMenuItem16);
 
         jMenuItem23.setText("Corponor");
         jMenuItem23.addActionListener(new java.awt.event.ActionListener() {
@@ -553,60 +608,42 @@ public class Principal extends javax.swing.JFrame {
                 jMenuItem23ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem23);
+        jMenu10.add(jMenuItem23);
 
-        jMenuItem21.setText("ReporteCorpocaldas");
+        jMenuItem21.setText("Corpocaldas");
         jMenuItem21.setToolTipText("");
         jMenuItem21.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem21ActionPerformed(evt);
             }
         });
-        jMenu7.add(jMenuItem21);
+        jMenu10.add(jMenuItem21);
 
         mnuRGeneral2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_search.png"))); // NOI18N
-        mnuRGeneral2.setText("Reporte Corpoboyaca");
+        mnuRGeneral2.setText("Corpoboyaca");
         mnuRGeneral2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnuRGeneral2ActionPerformed(evt);
             }
         });
-        jMenu7.add(mnuRGeneral2);
+        jMenu10.add(mnuRGeneral2);
 
-        jMenuBar1.add(jMenu7);
+        jMenuBar1.add(jMenu10);
 
-        jMenu8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
-        jMenu8.setText("Normas");
+        jMenu9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
+        jMenu9.setText("Reportes3");
+        jMenu9.add(jSeparator4);
 
-        jMenuNormasDefectos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_warning.png"))); // NOI18N
-        jMenuNormasDefectos.setText("Defectos");
-        jMenuNormasDefectos.addActionListener(new java.awt.event.ActionListener() {
+        jMenuNormasPermisibles2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
+        jMenuNormasPermisibles2.setText("Abortadas y/o canceladas");
+        jMenuNormasPermisibles2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuNormasDefectosActionPerformed(evt);
+                jMenuNormasPermisibles2ActionPerformed(evt);
             }
         });
-        jMenu8.add(jMenuNormasDefectos);
+        jMenu9.add(jMenuNormasPermisibles2);
 
-        jMenuNormasTiposMedida.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
-        jMenuNormasTiposMedida.setText("Tipos Medida");
-        jMenuNormasTiposMedida.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuNormasTiposMedidaActionPerformed(evt);
-            }
-        });
-        jMenu8.add(jMenuNormasTiposMedida);
-
-        jMenuNormasPermisibles.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
-        jMenuNormasPermisibles.setText("Permisibles");
-        jMenuNormasPermisibles.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuNormasPermisiblesActionPerformed(evt);
-            }
-        });
-        jMenu8.add(jMenuNormasPermisibles);
-        jMenu8.add(jSeparator2);
-
-        jMenuBar1.add(jMenu8);
+        jMenuBar1.add(jMenu9);
 
         setJMenuBar(jMenuBar1);
 
@@ -878,6 +915,16 @@ public class Principal extends javax.swing.JFrame {
     private void mnuRGeneral2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuRGeneral2ActionPerformed
         reporteCorpoboyaca();
     }//GEN-LAST:event_mnuRGeneral2ActionPerformed
+
+    private void jMenuNormasPermisibles2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuNormasPermisibles2ActionPerformed
+        // TODO add your handling code here:
+        PruebasAbortadas();
+    }//GEN-LAST:event_jMenuNormasPermisibles2ActionPerformed
+
+    private void jMenuItem15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem15ActionPerformed
+        // TODO add your handling code here:
+        backupDb2();
+    }//GEN-LAST:event_jMenuItem15ActionPerformed
 
     protected void hojaPruebas() {
         FrmPruebas frame = new FrmPruebas();
@@ -1433,6 +1480,26 @@ public class Principal extends javax.swing.JFrame {
         } catch (java.beans.PropertyVetoException e) {
         }
     }
+
+    protected void PruebasAbortadas() {
+        PruebasAbortadas frame = new PruebasAbortadas();
+        frame.setSize(this.getToolkit().getScreenSize());
+        frame.setVisible(true);
+        desktop.add(frame);
+
+        //maximizar pantalla
+        try {
+            frame.setMaximum(rootPaneCheckingEnabled);
+        } catch (PropertyVetoException ex) {
+            LOG.log(Level.SEVERE, "Error al maximizar frame: {0}", ex.getMessage());
+        }
+
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {
+        }
+    }
+
 //--hg
 
     protected void usuarios() {
@@ -1684,7 +1751,7 @@ public class Principal extends javax.swing.JFrame {
                 SwingUtilities.invokeLater(() -> {
                     // Muestra un cuadro de diálogo después de que el respaldo haya terminado
                     if (result == 0) {
-                        JOptionPane.showMessageDialog(null, "Terminado", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Terminado.\nEl backup se encuentra dentro de la carpeta de este programa.", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
                     }else{
                         JOptionPane.showMessageDialog(null, "Este computador debe tener instalado el mysql server y tener configurada la variable de entorno (C:\\Program Files\\MySQL\\MySQL Server x.x\\bin) para poder realizar esta accion. Contacte con soporte", "Mensaje", JOptionPane.ERROR_MESSAGE);
                     }
@@ -1699,6 +1766,25 @@ public class Principal extends javax.swing.JFrame {
         pane.add(progressBar);
         dialog.pack();
         dialog.setVisible(true);
+    }
+
+    private void backupDb2() {
+        FrmBackup frame = new FrmBackup();
+        frame.setVisible(true); //necessary as of 1.3      
+
+        desktop.add(frame);
+
+        //maximizar pantalla
+        try {
+            frame.setMaximum(rootPaneCheckingEnabled);
+        } catch (PropertyVetoException ex) {
+            LOG.log(Level.SEVERE, "Error al maximizar frame: {0}", ex.getMessage());
+        }
+
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {
+        }
     }
 
     /**
@@ -1720,9 +1806,11 @@ public class Principal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem RDivecol;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu10;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenu jMenu7;
     private javax.swing.JMenu jMenu8;
+    private javax.swing.JMenu jMenu9;
     private javax.swing.JMenuItem jMenuArchivoHojaPruebas;
     private javax.swing.JMenuItem jMenuArchivoIniciarCDA;
     private javax.swing.JMenuItem jMenuArchivoPropietario;
@@ -1735,6 +1823,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem13;
     private javax.swing.JMenuItem jMenuItem14;
+    private javax.swing.JMenuItem jMenuItem15;
     private javax.swing.JMenuItem jMenuItem16;
     private javax.swing.JMenuItem jMenuItem18;
     private javax.swing.JMenuItem jMenuItem19;
@@ -1754,6 +1843,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuManejoEventoCDA;
     private javax.swing.JMenuItem jMenuNormasDefectos;
     private javax.swing.JMenuItem jMenuNormasPermisibles;
+    private javax.swing.JMenuItem jMenuNormasPermisibles2;
     private javax.swing.JMenuItem jMenuNormasTiposMedida;
     private javax.swing.JMenuItem jMenuSicov;
     private javax.swing.JMenuItem jMenuSicov1;
@@ -1761,6 +1851,8 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JMenuItem menuInspeccionSensorial;
     private javax.swing.JMenuItem menuSuperVijia;
     private javax.swing.JMenuItem menu_marca;

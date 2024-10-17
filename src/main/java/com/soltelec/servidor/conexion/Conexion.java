@@ -8,9 +8,11 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.soltelec.servidor.utils.CMensajes;
 import com.soltelec.servidor.utils.CifraDesifra;
+import com.soltelec.servidor.utils.UtilPropiedades;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -70,12 +72,17 @@ public class Conexion implements Serializable {
             }
 
             String consulta = "SELECT NIT FROM cda WHERE id_cda = 1";
-            String url = "jdbc:mysql://" + datos.get(1) + ":" + datos.get(3) + "/" + datos.get(0) + "?zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false";
+            String url = "jdbc:mysql://" + datos.get(1) + ":" + datos.get(3) + "/" + datos.get(0) + "?allowPublicKeyRetrieval=true&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false";
             System.out.println("URL: "+url);
 
             String user = datos.get(2);
-            String password = datos.get(4);
-            
+            // Cargar el archivo .env manualmente
+            Map<String, String> env = UtilPropiedades.loadEnv();
+
+            String password = datos.get(4).equalsIgnoreCase("Dental")
+            ? env.get("dbPassword")
+            : datos.get(4);
+
             if (!licencia){
                 try (Connection conexion = DriverManager.getConnection(
                     url, 
@@ -124,7 +131,7 @@ public class Conexion implements Serializable {
             ipServidor = datos.get(1);
             usuario = datos.get(2);
             puerto = datos.get(3);
-            contrasena = datos.get(4);
+            contrasena = password;
 
             bufferedReader.close();
         } catch (IOException ex) {

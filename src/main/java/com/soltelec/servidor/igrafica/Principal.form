@@ -161,7 +161,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/com/soltelec/servidor/images/download_database.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Backup (mysqlDump)"/>
+                <Property name="text" type="java.lang.String" value="Backup y restauraci&#xf3;n"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem15ActionPerformed"/>
@@ -172,7 +172,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/com/soltelec/servidor/images/download_database.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Backup y Restauraci&#xf3;n"/>
+                <Property name="text" type="java.lang.String" value="Backup (mysqlDump)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>

@@ -1,5 +1,7 @@
 package com.soltelec.servidor.consultas;
 
+import com.soltelec.servidor.conexion.Conexion;
+
 public class Consultas {
 
     private Consultas() {
@@ -8,7 +10,7 @@ public class Consultas {
 
     @SuppressWarnings("sonar")
     public static String getSoftware(){
-        return "SELECT * FROM db_cda.software WHERE Id_sw=1";
+        return "SELECT * FROM software WHERE Id_sw=1";
     }
 
     public static String getDatosCda(){
@@ -21,7 +23,7 @@ public class Consultas {
         "    CASE WHEN EXISTS (\n" + //
         "                SELECT 1\n" + //
         "                FROM information_schema.columns\n" + //
-        "                WHERE table_schema = 'db_cda'\n" + //
+        "                WHERE table_schema = '"+Conexion.getBaseDatos()+"'\n" + //
         "                AND table_name = 'cda'\n" + //
         "                AND column_name = 'departamento'\n" + //
         "             )\n" + //
@@ -32,7 +34,7 @@ public class Consultas {
         "    CASE WHEN EXISTS (\n" + //
         "                SELECT 1\n" + //
         "                FROM information_schema.columns\n" + //
-        "                WHERE table_schema = 'db_cda'\n" + //
+        "                WHERE table_schema = '"+Conexion.getBaseDatos()+"'\n" + //
         "                AND table_name = 'cda'\n" + //
         "                AND column_name = 'norma_aplicada'\n" + //
         "             )\n" + //
@@ -1364,6 +1366,516 @@ public class Consultas {
         "    p.Fecha_prueba asc;";
     }
 
+    public static String getNtc2(String tipo){
+        return
+        "SELECT \n" + //
+        "    -- Datos propietario\n" + //
+        "    pro.Tipo_identificacion AS TIP_IDE_PROP,\n" + //
+        "    pro.CAROWNER AS NUM_IDE_PROP,\n" + //
+        "    CONCAT(pro.Nombres, ' ', pro.Apellidos) AS NOM_PROP,\n" + //
+        "    pro.Direccion AS DIR_PROP,\n" + //
+        "    pro.Numero_telefono AS TEL1_PROP,\n" + //
+        "    cy.Nombre_ciudad AS MUN_PROP,\n" + //
+        "    pro.email AS CORR_E_PROP,\n" + //
+        "\n" + //
+        "    -- Datos vehículo\n" + //
+        "    v.CARPLATE AS PLACA,\n" + //
+        "    v.Modelo AS MODELO,\n" + //
+        "    v.Numero_motor AS NUM_MOTOR,\n" + //
+        "    v.VIN,\n" + //
+        "    v.Diametro AS DIA_ESCAPE,\n" + //
+        "    v.Cinlindraje AS CILINDRAJE,\n" + //
+        "    v.Numero_licencia AS LIC_TRANS,\n" + //
+        "    v.kilometraje AS KM,\n" + //
+        "    v.conversion_gnv AS GNV_CONV,\n" + //
+        "    hp.fecha_venc_gnv AS GNV_CONV_V,\n" + //
+        "    m.Nombre_marca AS MARCA,\n" + //
+        "    l.CRLNAME AS LINEA,\n" + //
+        "    cv.Nombre_clase AS CLASE,\n" + //
+        "    s.Nombre_servicio AS SERVICIO,\n" + //
+        "    tg.Nombre_gasolina AS TIP_COMB,\n" + //
+        "    v.Tiempos_motor AS TIP_MOTOR,\n" + //
+        "    v.Numero_exostos AS NUM_ESCAPE,\n" + //
+        "    CONCAT(v.Tiempos_motor, 'T') AS DIS_MOTOR,\n" + //
+        "    v.diseño as diseno,\n" + //
+        "\n" + //
+        "    -- Datos analizador\n" + //
+        "    p.serialEquipo,\n" + //
+        "    \n" + //
+        "    (SELECT u.cedula\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN usuarios u ON u.GEUSER = c.GEUSER\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS NUM_IDE_VGP,\n" + //
+        "    \n" + //
+        "    (SELECT u.Nombre_usuario\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN usuarios u ON u.GEUSER = c.GEUSER\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS NOM_VGP,\n" + //
+        "    \n" + //
+        "    (SELECT MAX(c.CURDATE)\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 3) AS F_FUGAS,\n" + //
+        "     \n" + //
+        "     (SELECT MAX(c.CURDATE)\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 2) AS F_VGP,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.laboratorio_pipeta_alta\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_ALTO_LAB,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.cilindro_pipeta_alta\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_ALTA_CIL,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.certificado_pipeta_alta\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_ALTA_CER,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.laboratorio_pipeta_baja\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_BAJA_LAB,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.cilindro_pipeta_baja\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_BAJA_CIL,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.certificado_pipeta_baja\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_BAJA_CER,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.alta_hc\n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_HC_ALTO_H,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.bm_hc \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_HC_BAJO_H,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.alta_co \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_CO_ALTO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.bm_co \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_CO_BAJO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.alta_co2 \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_CO2_ALTO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.bm_co2 \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS P_CO2_BAJO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_alta_hc \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_HC_ALTO_H,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_bm_hc \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_HC_BAJO_H,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_alta_co  \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_CO_ALTO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_bm_co   \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_CO_BAJO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_alta_co2    \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_CO2_ALTO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_bm_co2     \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_CO2_BAJO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_alta_o2      \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_O2_ALTO,\n" + //
+        "    \n" + //
+        "    (SELECT cdp.banco_bm_o2       \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_O2_BAJO,\n" + //
+        "    \n" + //
+        "    '' AS C_VGP,\n" + //
+        "    \n" + //
+        "    (SELECT c.aprobada     \n" + //
+        "\tFROM calibraciones c\n" + //
+        "\tINNER JOIN calibracion_dos_puntos cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //
+        "\tWHERE c.CURDATE BETWEEN DATE_SUB(p.Fecha_prueba, INTERVAL 3 DAY) AND p.Fecha_prueba\n" + //
+        "\t  AND c.id_tipo_calibracion = 2\n" + //
+        "\tORDER BY c.CURDATE DESC\n" + //
+        "\tLIMIT 1) AS R_VGP,\n" + //
+        "    \n" + //
+        "    -- Datos generales de la inspección\n" + //
+        "    ur.cedula AS NUM_IDE_DT,\n" + //
+        "    ur.Nombre_usuario AS NOM_DT,\n" + //
+        "    u.cedula AS NUM_IDE_IT,\n" + //
+        "    u.Nombre_usuario AS NOM_IT,\n" + //
+        "    hp.con_hoja_prueba AS NUM_FUR,\n" + //
+        "    hp.Fecha_ingreso_vehiculo AS FECHA_FUR,\n" + //
+        "    hp.consecutivo_runt AS CONS_RUNT,\n" + //
+        "    hp.con_hoja_prueba AS FUR_ASOC,\n" + //
+        "    hp.Numero_intentos,\n" + //
+        "    c.CONSECUTIVE AS CERT_RTMYG,\n" + //
+        "    p.Fecha_prueba AS F_INI_INSP,\n" + //
+        "    p.Fecha_final AS F_FIN_INSP,\n" + //
+        "    p.Fecha_aborto AS F_ABORTO,\n" + //
+        "    p.observaciones AS C_ABORTO,\n" + //
+        "    hp.forma_med_temp AS LUGAR_TEMP,\n" + //
+        "\n" + //
+        "    (SELECT MAX(c.CURDATE)\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND VALOR1 <> 0) AS FECHA_LIN,\n" + //
+        "     \n" + //
+        "     (SELECT lab_filtro_alto\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS P_ALTO_LAB_DI,\n" + //
+        "     \n" + //
+        "     (SELECT serial_filtro_alto\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS P_ALTO_SERIAL_DI,\n" + //
+        "     \n" + //
+        "     (SELECT certificado_filtro_alto\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS P_ALTO_CER_DI,\n" + //
+        "     \n" + //
+        "     (SELECT VALOR2\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS V_FDN_ALTO,\n" + //
+        "     \n" + //
+        "     (SELECT lab_filtro_bajo\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS P_BAJO_LAB_DI,\n" + //
+        "     \n" + //
+        "     (SELECT serial_filtro_bajo\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS P_BAJO_SERIAL_DI,\n" + //
+        "     \n" + //
+        "     (SELECT certificado_filtro_bajo\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS P_BAJO_CER_DI,\n" + //
+        "     \n" + //
+        "     (SELECT VALOR1\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS V_FDN_BAJO,\n" + //
+        "     \n" + //
+        "     (SELECT VALOR7\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS R_FDN_CERO,\n" + //
+        "     \n" + //
+        "     (SELECT VALOR4\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS R_FDN_BAJO,\n" + //
+        "     \n" + //
+        "     (SELECT VALOR5\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS R_FDN_ALTO,\n" + //
+        "     \n" + //
+        "     (SELECT VALOR6\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS R_FDN_CIEN,\n" + //
+        "     \n" + //
+        "     (SELECT aprobada\n" + //
+        "     FROM calibraciones AS c\n" + //
+        "     WHERE c.CURDATE < p.Fecha_prueba\n" + //
+        "     AND id_tipo_calibracion = 1\n" + //
+        "     AND lab_filtro_alto IS NOT NULL\n" + //
+        "     limit 1) AS R_LIN,\n" + //
+        "     \n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8031 THEN m1.Valor_medida END) AS temperatura_ambiente,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8032 THEN m1.Valor_medida END) AS humedad_relativa,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8006 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8022 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS temperatura_motor,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8005 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8028 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS rpm_ralenti,\n" + //
+        "             \n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8011 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8029 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS rpm_crucero,\n" + //
+        "             \n" + //
+        "\tMAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%humo%' \n" + //
+        "\t\t  AND (LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%negro%' OR LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%azul%') \n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS presencia_humo_n_a,\n" + //
+        "             \n" + //
+        "\tMAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%revoluciones FUERA RANGO%' \n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS rpm_fuera_rango,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%fuga%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%tubo%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS fugas_tubo_escape,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%salida%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%adicional%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS salidas_adicionales_diseno,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%tapa%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%aceite%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS ausencia_tapa_aceite,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%ausencia%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%tapa%'\n" + //
+        "          AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%combustible%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS ausencia_tapa_combustible,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%filtro%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%aire%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS ausencia_dano_filtro_aire,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%recirculaci%' \n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS recirculacion,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%accesorio%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%deformacion%'\n" + //
+        "          AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%tubo%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS accesorios,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%refrigeraci%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%operaci%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS refrigeracion,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%instala%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%dispositivo%'\n" + //
+        "          AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%motor%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS AC_DISP,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%temperatura%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%10%'\n" + //
+        "          AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%dif%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS DIF_TEMP10,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%Problemas en el sistema de inyección de combustible%' \n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS GOB_NC,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%Indicación visible o sonora que pone en duda las condiciones normales del moto%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS FUN_MOTOR,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%no cumplir con la velocidad gobernada en el tiempo indicado%' \n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS ACC_SUBITA,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%diferencia  aritmetica%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS DIF_ARITM,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%Falla%' \n" + //
+        "\t\t  AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%súbita%'\n" + //
+        "          AND LOWER(REPLACE(p.observaciones, ',', '')) LIKE '%motor%'\n" + //
+        "\t THEN 1\n" + //
+        "\t ELSE 0 END) AS subita_motor,\n" + //
+        "     \n" + //
+        "     MAX(CASE WHEN m1.MEASURETYPE = 8001 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8018 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS hc_ralenti,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8002 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8020 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS co_ralenti,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8003 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8019 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS co2_ralenti,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8004 AND v.Tiempos_motor = 4 THEN m1.Valor_medida\n" + //
+        "             WHEN m1.MEASURETYPE = 8021 AND v.Tiempos_motor = 2 THEN m1.Valor_medida END) AS O2_ralenti,\n" + //
+        "\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8007 THEN m1.Valor_medida END) AS HC_crucero,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8008 THEN m1.Valor_medida END) AS CO_crucero,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8009 THEN m1.Valor_medida END) AS CO2_crucero,\n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8010 THEN m1.Valor_medida END) AS O2_crucero,\n" + //
+        "    \n" + //
+        "    MAX(CASE WHEN (dfp.id_defecto IN (84018, 15057, 80003, 80000))\n" + //
+        "         THEN 1\n" + //
+        "         ELSE 0 END) AS NC_EMISIONES,\n" + //
+        "         \n" + //
+        "\tp.Aprobada as RES_FINAL,\n" + //
+        "    \n" + //
+        "    MAX(CASE WHEN m1.MEASURETYPE = 8034 THEN m1.Valor_medida END) AS T_INICIAL_MOTOR,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8037 THEN m1.Valor_medida END) AS T_FINAL_MOTOR,\n" + //
+        "\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8035 THEN m1.Valor_medida END) AS RPM_RAL2,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8036 THEN m1.Valor_medida END) AS RPM_GOB,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8035 THEN m1.Valor_medida END) AS RPM_RAL_PRE,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8038 THEN m1.Valor_medida END) AS RPM_GOB_PRE,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8033 THEN m1.Valor_medida END) AS R_DEN_PRE,\n" + //
+        "\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8035 THEN m1.Valor_medida END) AS RPM_RAL_C1,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8039 THEN m1.Valor_medida END) AS RPM_GOB_C1,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8013 THEN m1.Valor_medida END) AS R_DEN_C1,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8035 THEN m1.Valor_medida END) AS RPM_RAL_C2,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8040 THEN m1.Valor_medida END) AS RPM_GOB_C2,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8014 THEN m1.Valor_medida END) AS R_DEN_C2,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8035 THEN m1.Valor_medida END) AS RPM_RAL_C3,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8041 THEN m1.Valor_medida END) AS RPM_GOB_C3,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8015 THEN m1.Valor_medida END) AS R_DEN_C3,\n" + //
+        "\tMAX(CASE WHEN m1.MEASURETYPE = 8017 THEN m1.Valor_medida END) AS R_FINAL_DEN\n" + //
+        "\n" + //
+        "FROM \n" + //
+        "    hoja_pruebas AS hp\n" + //
+        "    INNER JOIN pruebas AS p ON p.hoja_pruebas_for = hp.TESTSHEET\n" + //
+        "    INNER JOIN usuarios AS u ON u.GEUSER = p.Usuario_for\n" + //
+        "    INNER JOIN usuarios AS ur ON ur.GEUSER = hp.usuario_resp\n" + //
+        "    INNER JOIN vehiculos AS v ON hp.Vehiculo_for = v.CAR\n" + //
+        "    INNER JOIN lineas_vehiculos AS l ON v.CARLINE = l.CARLINE\n" + //
+        "    INNER JOIN clases_vehiculo AS cv ON cv.CLASS = v.CLASS\n" + //
+        "    INNER JOIN servicios AS s ON s.SERVICE = v.SERVICE\n" + //
+        "    INNER JOIN propietarios AS pro ON (v.CAROWNER = pro.CAROWNER)\n" + //
+        "    INNER JOIN tipos_gasolina AS tg ON tg.FUELTYPE = v.FUELTYPE\n" + //
+        "    INNER JOIN ciudades AS ci ON (ci.CITY = pro.CITY)\n" + //
+        "    INNER JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
+        "    left JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
+        "    INNER JOIN certificados AS c ON hp.TESTSHEET = c.TESTSHEET\n" + //
+        "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
+        "    LEFT JOIN defxprueba AS dfp ON dfp.id_prueba = p.Id_Pruebas\n" + //
+        "    LEFT JOIN defectos AS df ON dfp.id_defecto = df.CARDEFAULT\n" + //
+        "    INNER JOIN ciudades AS cy ON cy.CITY = pro.CITY\n" + //
+        "\n" + //
+        "WHERE \n" + //
+        "    p.Tipo_prueba_for = 8\n" + //
+        "    AND p.Fecha_prueba BETWEEN ? AND ?\n" + //
+        tipo+" "+
+        "GROUP BY \n" + //
+        "    p.Id_Pruebas\n" + //
+        "ORDER BY \n" + //
+        "    p.Fecha_prueba ASC;";
+    }
+
     public static String getCormacarenaMotos(){
         return
         "SELECT \r\n" + //
@@ -1782,7 +2294,7 @@ public class Consultas {
     public static String getAbortos(){
         return
         "SELECT \n" + //
-        "tp.Nombre_tipo_prueba, p.Fecha_aborto, p.observaciones, u.Nombre_usuario\n" + //
+        "tp.Nombre_tipo_prueba, p.Fecha_aborto, p.observaciones, u.Nombre_usuario, p.Comentario_aborto\n" + //
         "FROM pruebas p \n" + //
         "INNER JOIN tipo_prueba tp ON tp.TESTTYPE = p.Tipo_prueba_for\n" + //
         "INNER JOIN usuarios u ON u.GEUSER = p.usuario_for\n" + //

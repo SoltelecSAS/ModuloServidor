@@ -9,5 +9,6 @@ public class Abortos {
     private String tipoPrueba;
     private String fechaAborto;
     private String motivoAborto;
+    private String detallesAborto;
     private String operario;
 }

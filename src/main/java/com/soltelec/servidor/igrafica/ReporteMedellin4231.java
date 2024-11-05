@@ -338,9 +338,9 @@ public class ReporteMedellin4231 extends javax.swing.JInternalFrame {
                 softEquipo.getMarcaAg(),
                 softEquipo.getModAg(),
                 softEquipo.getSerialAg(),
-                softEquipo.getMarcaBg(),
-                softEquipo.getModBg(),
-                softEquipo.getSerialBg(),
+                "",
+                "",
+                "",
                 softEquipo.getLtoe(),
                 softEquipo.getSerialE(),
                 softEquipo.getMarcaRpm(),
@@ -729,6 +729,7 @@ public class ReporteMedellin4231 extends javax.swing.JInternalFrame {
             @Override
             public void run() {
                 fillData(fechaInicial.getDate(), fechaFInal.getDate());
+                btnGenerar.setEnabled(false);
             }
         });
     }

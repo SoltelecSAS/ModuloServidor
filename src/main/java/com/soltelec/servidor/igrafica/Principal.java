@@ -278,7 +278,7 @@ public class Principal extends javax.swing.JFrame {
         menu_usuario.add(mnuGestionEquipos);
 
         jMenuItem15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/download_database.png"))); // NOI18N
-        jMenuItem15.setText("Backup (mysqlDump)");
+        jMenuItem15.setText("Backup y restauración");
         jMenuItem15.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem15ActionPerformed(evt);
@@ -287,7 +287,7 @@ public class Principal extends javax.swing.JFrame {
         menu_usuario.add(jMenuItem15);
 
         jMenuItem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/download_database.png"))); // NOI18N
-        jMenuItem1.setText("Backup y Restauración");
+        jMenuItem1.setText("Backup (mysqlDump)");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);

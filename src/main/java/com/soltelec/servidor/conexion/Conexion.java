@@ -76,12 +76,14 @@ public class Conexion implements Serializable {
             System.out.println("URL: "+url);
 
             String user = datos.get(2);
-            // Cargar el archivo .env manualmente
-            Map<String, String> env = UtilPropiedades.loadEnv();
 
-            String password = datos.get(4).equalsIgnoreCase("Dental")
-            ? env.get("dbPassword")
-            : datos.get(4);
+            String password = datos.get(4);
+
+            if (password.equalsIgnoreCase("Dental")) {
+                // Cargar el archivo .env manualmente
+                Map<String, String> env = UtilPropiedades.loadEnv();
+                password = env.get("dbPassword");
+            }
 
             if (!licencia){
                 try (Connection conexion = DriverManager.getConnection(

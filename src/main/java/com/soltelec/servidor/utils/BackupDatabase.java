@@ -106,8 +106,9 @@ public class BackupDatabase {
              
             
         } catch (IOException ex) {
-            LOG.severe(ex.getMessage());
-            JOptionPane.showMessageDialog(null, "Fallo el proceso Ioexception " + ex.getMessage());
+            LOG.severe(ex.toString()); // Esto proporciona información detallada sobre la excepción
+            ex.printStackTrace(); // Imprime la traza completa de la excepción en la consola
+            JOptionPane.showMessageDialog(null, "Fallo el proceso IOException: " + ex.getMessage());
         }
     }
 

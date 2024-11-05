@@ -964,6 +964,7 @@ public class ReporteMedellin extends javax.swing.JInternalFrame {
             @Override
             public void run() {
                 fillData(fechaInicial.getDate(), fechaFInal.getDate());
+                btnGenerar.setEnabled(false);
             }
         });
     }

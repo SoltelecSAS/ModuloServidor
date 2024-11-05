@@ -55,7 +55,8 @@ public class PruebasAbortadas extends javax.swing.JInternalFrame {
         datosAbortos.addColumn("Tipo prueba");                  //0
         datosAbortos.addColumn("Fecha de aborto/cancelacion");  //1
         datosAbortos.addColumn("Motivo aborto");                //2
-        datosAbortos.addColumn("Operario de la prueba");        //3
+        datosAbortos.addColumn("Detalles del aborto");        //3
+        datosAbortos.addColumn("Operario de la prueba");        //4
 
 //---------- 
     }
@@ -68,6 +69,7 @@ public class PruebasAbortadas extends javax.swing.JInternalFrame {
                 datos.getTipoPrueba(),
                 datos.getFechaAborto(),
                 datos.getMotivoAborto(),
+                datos.getDetallesAborto(),
                 datos.getOperario()
             };
             datosAbortos.addRow(fila);

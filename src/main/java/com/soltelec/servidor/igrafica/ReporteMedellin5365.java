@@ -736,6 +736,7 @@ public class ReporteMedellin5365 extends javax.swing.JInternalFrame {
             @Override
             public void run() {
                 fillData(fechaInicial.getDate(), fechaFInal.getDate());
+                btnGenerar.setEnabled(false);
             }
         });
     }
@@ -1171,7 +1172,7 @@ public class ReporteMedellin5365 extends javax.swing.JInternalFrame {
 
         Object[] objProp1 = new Object[55];
         String datos = "";
-        Double HCAnt = 0.0, CO = 0.0, COANT = 0.0, CO2 = 0.0, CO2ANT = 0.0, O2 = 0.0, HCDesp = 0.0;
+        Double HCAnt = 0.0, COVariable = 0.0, COANT = 0.0, CO2Variable = 0.0, CO2ANT = 0.0, O2Variable = 0.0, HCDesp = 0.0;
         for (Medidas medidas : pruebasebas.getMedidasList()) {
 
             if (medidas.getTiposMedida().getMeasuretype() == 8006 || medidas.getTiposMedida().getMeasuretype() == 8022) {
@@ -1241,58 +1242,59 @@ public class ReporteMedellin5365 extends javax.swing.JInternalFrame {
                     System.out.println("valor HC despues de la correccion---" + HCDesp);
                     break;
                 case 8002:
-                    CO = (double) medidas.getValormedida();
-                    System.out.println("valor CO despues de la correccion--" + CO);
+                    COVariable = (double) medidas.getValormedida();
+                    System.out.println("valor CO despues de la correccion--" + COVariable);
                     break;
                 case 8003:
-                    CO2 = (double) medidas.getValormedida();
-                    System.out.println("valor CO2 despues de la correccion--" + CO2);
+                    CO2Variable = (double) medidas.getValormedida();
+                    System.out.println("valor CO2 despues de la correccion--" + CO2Variable);
                     break;
                 case 8004:
-                    O2 = (double) medidas.getValormedida();
-                    System.out.println("valor O2 despues de la correccion--" + O2);
+                    O2Variable = (double) medidas.getValormedida();
+                    System.out.println("valor O2 despues de la correccion--" + O2Variable);
                     break;
                 case 8018:
                     HCDesp = (double) medidas.getValormedida();
                     System.out.println("valor HC despues de la correccion---" + HCDesp);
                     break;
                 case 8020:
-                    CO = (double) medidas.getValormedida();
-                    System.out.println("valor CO despues de la correccion--" + CO);
+                    COVariable = (double) medidas.getValormedida();
+                    System.out.println("valor CO despues de la correccion--" + COVariable);
                     break;
                 case 8019:
-                    CO2 = (double) medidas.getValormedida();
-                    System.out.println("valor CO2 despues de la correccion--" + CO2);
+                    CO2Variable = (double) medidas.getValormedida();
+                    System.out.println("valor CO2 despues de la correccion--" + CO2Variable);
                     break;
                 case 8021:
-                    O2 = (double) medidas.getValormedida();
-                    System.out.println("valor O2 despues de la correccion--" + O2);
+                    O2Variable = (double) medidas.getValormedida();
+                    System.out.println("valor O2 despues de la correccion--" + O2Variable);
                     break;
             }
 
         }
 
-        if (pruebasebas.getHojaPruebas().getVehiculos().getTiemposmotor() == 2 && O2 > 11) {
+        //PUTO
+        if (pruebasebas.getHojaPruebas().getVehiculos().getTiemposmotor() == 2 && O2Variable > 11) {
             System.out.println("entro if 1");
-            HCAnt = (HCDesp / ((21 - 11) / (21 - O2)));
-            COANT = (CO / ((21 - 11) / (21 - O2)));
-            CO2ANT = (CO2 / ((21 - 11) / (21 - O2)));
+            HCAnt = (HCDesp / ((21 - 11) / (21 - O2Variable)));
+            COANT = (COVariable / ((21 - 11) / (21 - O2Variable)));
+            CO2ANT = (CO2Variable / ((21 - 11) / (21 - O2Variable)));
             datos += String.format("%.2f", HCAnt) + "HC";
             datos += String.format("%.2f", COANT) + "CO";
-            datos += String.format("%.2f", CO2) + "CO2";
-            datos += String.format("%.2f", O2) + "O2";
+            datos += String.format("%.2f", CO2Variable) + "CO2";
+            datos += String.format("%.2f", O2Variable) + "O2";
             objProp1[13] = datos.trim();
 
         }
-        if (pruebasebas.getHojaPruebas().getVehiculos().getTiemposmotor() == 4 && O2 > 6) {
+        if (pruebasebas.getHojaPruebas().getVehiculos().getTiemposmotor() == 4 && O2Variable > 6) {
             System.out.println("entro if 2");
-            HCAnt = (HCDesp / ((21 - 6) / (21 - O2)));
-            COANT = (CO / ((21 - 6) / (21 - O2)));
-            CO2ANT = (CO2 / ((21 - 6) / (21 - O2)));
+            HCAnt = (HCDesp / ((21 - 6) / (21 - O2Variable)));
+            COANT = (COVariable / ((21 - 6) / (21 - O2Variable)));
+            CO2ANT = (CO2Variable / ((21 - 6) / (21 - O2Variable)));
             datos += String.format("%.2f", HCAnt) + "HC";
             datos += String.format("%.2f", COANT) + "CO";
-            datos += String.format("%.2f", CO2) + "CO2";
-            datos += String.format("%.2f", O2) + "O2";
+            datos += String.format("%.2f", CO2Variable) + "CO2";
+            datos += String.format("%.2f", O2Variable) + "O2";
             objProp1[13] = datos.trim();
         }
 

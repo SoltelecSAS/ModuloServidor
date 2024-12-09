@@ -82,7 +82,7 @@ public class FrmBackup extends javax.swing.JInternalFrame {
         btnBackup1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
 
-        setTitle("Backup/Restore");
+        setTitle("Backup/Import");
 
         TblBackup.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -100,9 +100,9 @@ public class FrmBackup extends javax.swing.JInternalFrame {
         });
         jScrollPane1.setViewportView(TblBackup);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Restauración de base de datos"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Importación base de datos"));
 
-        btnRestaurar.setText("Restaurar");
+        btnRestaurar.setText("Importar");
         btnRestaurar.setEnabled(false);
         btnRestaurar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -111,7 +111,7 @@ public class FrmBackup extends javax.swing.JInternalFrame {
         });
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("<html><p align=\"justify\">Seleccione un registro de la tabla para restaurar en la base de datos, tenga en cuenta que esta opción restablece los datos apartir de un backup ya existente y los datos que pueda tener en el servidor se sincronizaran</p></html>");
+        jLabel3.setText("<html><p align=\"justify\">Seleccionando un backup de la lista de arriba, creara una copia o restauracion en el localhost basandose en el backup escogido. Si ya tiene un backup que no aparece en esta lista y quiere importarlo, puede pegarlo en la carpeta C:/BACKUPS para que aparezca y pueda importarlo. No se recomienda hacer esta accion si el cumputador que esta corriendo este programa es el servidor donde esta almacenada la base de datos original.</p></html>");
         jLabel3.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jLabel3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
@@ -139,12 +139,12 @@ public class FrmBackup extends javax.swing.JInternalFrame {
                 .addContainerGap())
         );
 
-        jLabel3.getAccessibleContext().setAccessibleName("Restauración de base de datos");
+        jLabel3.getAccessibleContext().setAccessibleName("Importación base de datos");
 
         lbTexto.setBackground(java.awt.Color.gray);
         lbTexto.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         lbTexto.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lbTexto.setText("Backup y restauración de base de datos");
+        lbTexto.setText("Backup e importacion de base de datos");
 
         loading.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/espera.gif"))); // NOI18N
         loading.setOpaque(true);
@@ -164,7 +164,7 @@ public class FrmBackup extends javax.swing.JInternalFrame {
         });
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("<html><p align=\"justify\">Esta opción le permite generar un backup de la base de datos que esta en funcionamiento, esto guarda la información y le asigna un nombre con el formato fecha (dd-MM-yyyy), por ejemplo 10-10-2010.sql</p></html>");
+        jLabel2.setText("<html><p align=\"justify\">Genera un backup de la base de datos del servidor y le asigna como nombre la fecha del dia de hoy(ejm: 22-11-2024.sql). Este archivo de backup quedara guardado en C:/BACKUPS y aparecera en la lista de arriba una vez finalice su creacion.</p></html>");
         jLabel2.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jLabel2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
@@ -235,13 +235,17 @@ public class FrmBackup extends javax.swing.JInternalFrame {
 
     private void btnRestaurarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestaurarActionPerformed
         int t = TblBackup.getSelectedRow();
-        BackupDatabase.Restoredbfromsql(TblBackup.getValueAt(t, 0).toString());
+        loading.setVisible(true);
+        try {
+            BackupDatabase.Restoredbfromsql(TblBackup.getValueAt(t, 0).toString(), loading);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(FrmBackup.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }//GEN-LAST:event_btnRestaurarActionPerformed
 
     private void btnBackup1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackup1ActionPerformed
-         loading.setVisible(true);
-         System.out.println("ya le di visible a loading");                           
+         loading.setVisible(true);                       
         try {
             BackupDatabase.Backupdbtosql(loading);
         } catch (InterruptedException ex) {

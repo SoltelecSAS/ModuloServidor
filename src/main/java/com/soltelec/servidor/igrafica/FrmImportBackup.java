@@ -186,7 +186,8 @@ public class FrmImportBackup extends javax.swing.JFrame {
             });
 
             // Realizar la importación del respaldo de la base de datos
-            int result = DatabaseBackup.importBackup(jTextField1.getText());
+            //int result = DatabaseBackup.importBackup(jTextField1.getText());
+            int result = 1;
 
             // Verificar el resultado de la importación del respaldo
             

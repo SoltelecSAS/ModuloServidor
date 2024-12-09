@@ -608,6 +608,7 @@ public class Consultas {
         "\t-- Datos Equipo Analizador\n" + //
         "\te.pef,\n" + //
         "    e.serialresolucion as serial_analizador,\n" + //
+        "    p.serialEquipo as serial_nuevo,\n" + //
         "    e.marca as marca_analizador,\n" + //
         "    bm_hc,\n" + //
         "    bm_co,\n" + //
@@ -829,17 +830,17 @@ public class Consultas {
         "    pruebas AS p \n" + //
         "    INNER JOIN usuarios AS u ON u.GEUSER = p.Usuario_for\n" + //
         "    INNER JOIN hoja_pruebas AS hp ON p.hoja_pruebas_for = hp.TESTSHEET\n" + //
-        "    INNER JOIN usuarios AS ur ON ur.GEUSER = hp.usuario_resp\n" + //
+        "    LEFT JOIN usuarios AS ur ON ur.GEUSER = hp.usuario_resp\n" + //
         "    INNER JOIN vehiculos AS v ON hp.Vehiculo_for = v.CAR\n" + //
-        "    INNER JOIN lineas_vehiculos as l ON v.CARLINE = l.CARLINE\n" + //
-        "    INNER JOIN clases_vehiculo as cv on cv.CLASS = v.CLASS\n" + //
-        "    INNER JOIN servicios as s on s.SERVICE = v.SERVICE\n" + //
-        "    INNER JOIN propietarios AS pro ON (v.CAROWNER = pro.CAROWNER)\n" + //
-        "    INNER JOIN tipos_gasolina as tg on tg.FUELTYPE = v.FUELTYPE\n" + //
-        "    INNER JOIN ciudades AS ci ON (ci.CITY = pro.CITY)\n" + //
-        "    INNER JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
-        "    INNER JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
-        "    INNER JOIN certificados as c on hp.TESTSHEET = c.TESTSHEET\n" + //
+        "    LEFT JOIN lineas_vehiculos as l ON v.CARLINE = l.CARLINE\n" + //
+        "    LEFT JOIN clases_vehiculo as cv on cv.CLASS = v.CLASS\n" + //
+        "    LEFT JOIN servicios as s on s.SERVICE = v.SERVICE\n" + //
+        "    LEFT JOIN propietarios AS pro ON (v.CAROWNER = pro.CAROWNER)\n" + //
+        "    LEFT JOIN tipos_gasolina as tg on tg.FUELTYPE = v.FUELTYPE\n" + //
+        "    LEFT JOIN ciudades AS ci ON (ci.CITY = pro.CITY)\n" + //
+        "    LEFT JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
+        "    LEFT JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
+        "    LEFT JOIN certificados as c on hp.TESTSHEET = c.TESTSHEET\n" + //
         "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
         "    LEFT JOIN (\n" + //
         "        SELECT \n" + //
@@ -2306,5 +2307,14 @@ public class Consultas {
         "AND p.Fecha_prueba between ? and ?\n" + //
         "group by p.Id_pruebas\n" + //
         "order by p.Fecha_aborto;";
+    }
+
+    public static String getFugas(){
+        return
+        "select e.num_analizador, e.serialresolucion, e.pef, c.CURDATE, u.Nombre_usuario, c.aprobada from calibraciones c\r\n" + //
+        "inner join equipos e on e.id_equipo = c.id_equipo \r\n" + //
+        "inner join usuarios u on u.GEUSER = c.GEUSER \r\n" + //
+        "where c.CURDATE between ? and ? \r\n" + //
+        "and id_tipo_calibracion = 3 order by c.CURDATE desc;";
     }
 }

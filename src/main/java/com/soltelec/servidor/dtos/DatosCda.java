@@ -13,6 +13,7 @@ public class DatosCda {
     private String personaContacto;
     private String correoElectronico;
     private String telefono;
+    private String celular;
     private String departamento;
     private String ciudad;
     private String direccion;

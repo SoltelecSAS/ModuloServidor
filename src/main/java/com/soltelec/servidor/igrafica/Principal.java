@@ -103,8 +103,6 @@ public class Principal extends javax.swing.JFrame {
         jMenuUsuariosConsulta = new javax.swing.JMenuItem();
         mnuGestionEquipos = new javax.swing.JMenuItem();
         jMenuItem15 = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuSicov1 = new javax.swing.JMenuItem();
         jMenuSicov = new javax.swing.JMenuItem();
         jMenuLlantas = new javax.swing.JMenuItem();
         jMenuLlantas1 = new javax.swing.JMenuItem();
@@ -145,9 +143,11 @@ public class Principal extends javax.swing.JFrame {
         jMenuItem23 = new javax.swing.JMenuItem();
         jMenuItem21 = new javax.swing.JMenuItem();
         mnuRGeneral2 = new javax.swing.JMenuItem();
+        mnuRGeneral3 = new javax.swing.JMenuItem();
         jMenu9 = new javax.swing.JMenu();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         jMenuNormasPermisibles2 = new javax.swing.JMenuItem();
+        jMenuNormasPermisibles3 = new javax.swing.JMenuItem();
 
         jMenuItem10.setText("jMenuItem10");
 
@@ -285,24 +285,6 @@ public class Principal extends javax.swing.JFrame {
             }
         });
         menu_usuario.add(jMenuItem15);
-
-        jMenuItem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/download_database.png"))); // NOI18N
-        jMenuItem1.setText("Backup (mysqlDump)");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        menu_usuario.add(jMenuItem1);
-
-        jMenuSicov1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/import.png"))); // NOI18N
-        jMenuSicov1.setText("Importar backup(copia de la DB)");
-        jMenuSicov1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuSicov1ActionPerformed(evt);
-            }
-        });
-        menu_usuario.add(jMenuSicov1);
 
         jMenuSicov.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/url.png"))); // NOI18N
         jMenuSicov.setText("URL sicov");
@@ -628,6 +610,15 @@ public class Principal extends javax.swing.JFrame {
         });
         jMenu10.add(mnuRGeneral2);
 
+        mnuRGeneral3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_search.png"))); // NOI18N
+        mnuRGeneral3.setText("Bucaramanga");
+        mnuRGeneral3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuRGeneral3ActionPerformed(evt);
+            }
+        });
+        jMenu10.add(mnuRGeneral3);
+
         jMenuBar1.add(jMenu10);
 
         jMenu9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book.png"))); // NOI18N
@@ -642,6 +633,15 @@ public class Principal extends javax.swing.JFrame {
             }
         });
         jMenu9.add(jMenuNormasPermisibles2);
+
+        jMenuNormasPermisibles3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
+        jMenuNormasPermisibles3.setText("Verificación de fugas");
+        jMenuNormasPermisibles3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuNormasPermisibles3ActionPerformed(evt);
+            }
+        });
+        jMenu9.add(jMenuNormasPermisibles3);
 
         jMenuBar1.add(jMenu9);
 
@@ -688,10 +688,6 @@ public class Principal extends javax.swing.JFrame {
         eventocda();
     }//GEN-LAST:event_jMenuManejoEventoCDAActionPerformed
 
-    private void jMenuUsuariosConsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuUsuariosConsultaActionPerformed
-        usuarios();
-    }//GEN-LAST:event_jMenuUsuariosConsultaActionPerformed
-
     private void jMenuArchivoHojaPruebasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuArchivoHojaPruebasActionPerformed
         hojaPruebas();
     }//GEN-LAST:event_jMenuArchivoHojaPruebasActionPerformed
@@ -710,14 +706,6 @@ public class Principal extends javax.swing.JFrame {
     private void mnuDatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuDatosActionPerformed
         datos();
     }//GEN-LAST:event_mnuDatosActionPerformed
-
-    private void mnuGestionEquiposActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuGestionEquiposActionPerformed
-        equipos();
-    }//GEN-LAST:event_mnuGestionEquiposActionPerformed
-
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        backupDb();
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
         if ((evt.getKeyCode() == KeyEvent.VK_C) && ((evt.getModifiers() & KeyEvent.CTRL_MASK) != 0) && ((evt.getModifiers() & KeyEvent.ALT_MASK) != 0)) {
@@ -744,21 +732,6 @@ public class Principal extends javax.swing.JFrame {
             ///em.close();
         }
     }//GEN-LAST:event_formWindowClose
-
-    private void menu_usuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_usuarioActionPerformed
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_menu_usuarioActionPerformed
-
-    private void jMenuSicovActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuSicovActionPerformed
-        // TODO add your handling code here:
-        urlSicov();
-    }//GEN-LAST:event_jMenuSicovActionPerformed
-
-    private void jMenuLlantasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuLlantasActionPerformed
-        // TODO add your handling code here:
-        AgregarLlantas();
-    }//GEN-LAST:event_jMenuLlantasActionPerformed
 
     private void jMenuItem16ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem16ActionPerformed
         // TODO add your handling code here:
@@ -904,14 +877,6 @@ public class Principal extends javax.swing.JFrame {
         reportCorpocaldas();
     }//GEN-LAST:event_jMenuItem21ActionPerformed
 
-    private void jMenuLlantas1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuLlantas1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jMenuLlantas1ActionPerformed
-
-    private void jMenuSicov1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuSicov1ActionPerformed
-        importDatabase();
-    }//GEN-LAST:event_jMenuSicov1ActionPerformed
-
     private void mnuRGeneral2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuRGeneral2ActionPerformed
         reporteCorpoboyaca();
     }//GEN-LAST:event_mnuRGeneral2ActionPerformed
@@ -921,10 +886,45 @@ public class Principal extends javax.swing.JFrame {
         PruebasAbortadas();
     }//GEN-LAST:event_jMenuNormasPermisibles2ActionPerformed
 
+    private void menu_usuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_usuarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menu_usuarioActionPerformed
+
+    private void jMenuLlantas1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuLlantas1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuLlantas1ActionPerformed
+
+    private void jMenuLlantasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuLlantasActionPerformed
+        // TODO add your handling code here:
+        AgregarLlantas();
+    }//GEN-LAST:event_jMenuLlantasActionPerformed
+
+    private void jMenuSicovActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuSicovActionPerformed
+        // TODO add your handling code here:
+        urlSicov();
+    }//GEN-LAST:event_jMenuSicovActionPerformed
+
     private void jMenuItem15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem15ActionPerformed
         // TODO add your handling code here:
         backupDb2();
     }//GEN-LAST:event_jMenuItem15ActionPerformed
+
+    private void mnuGestionEquiposActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuGestionEquiposActionPerformed
+        equipos();
+    }//GEN-LAST:event_mnuGestionEquiposActionPerformed
+
+    private void jMenuUsuariosConsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuUsuariosConsultaActionPerformed
+        usuarios();
+    }//GEN-LAST:event_jMenuUsuariosConsultaActionPerformed
+
+    private void mnuRGeneral3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuRGeneral3ActionPerformed
+        reporteBucaramanga();
+    }//GEN-LAST:event_mnuRGeneral3ActionPerformed
+
+    private void jMenuNormasPermisibles3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuNormasPermisibles3ActionPerformed
+
+        RegistroFugas();
+    }//GEN-LAST:event_jMenuNormasPermisibles3ActionPerformed
 
     protected void hojaPruebas() {
         FrmPruebas frame = new FrmPruebas();
@@ -1175,6 +1175,22 @@ public class Principal extends javax.swing.JFrame {
     
     protected void reporteCorpoboyaca() {
         ReporteCorpoBoyaca frame = new ReporteCorpoBoyaca();
+        frame.setSize(this.getToolkit().getScreenSize());
+        frame.setVisible(true);
+        desktop.add(frame);        //maximizar pantalla
+        try {
+            frame.setMaximum(rootPaneCheckingEnabled);
+        } catch (PropertyVetoException ex) {
+            LOG.log(Level.SEVERE, "Error al maximizar frame: {0}", ex.getMessage());
+        }
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {
+        }
+    }
+    
+    protected void reporteBucaramanga() {
+        ReporteBucaramanga frame = new ReporteBucaramanga();
         frame.setSize(this.getToolkit().getScreenSize());
         frame.setVisible(true);
         desktop.add(frame);        //maximizar pantalla
@@ -1483,6 +1499,25 @@ public class Principal extends javax.swing.JFrame {
 
     protected void PruebasAbortadas() {
         PruebasAbortadas frame = new PruebasAbortadas();
+        frame.setSize(this.getToolkit().getScreenSize());
+        frame.setVisible(true);
+        desktop.add(frame);
+
+        //maximizar pantalla
+        try {
+            frame.setMaximum(rootPaneCheckingEnabled);
+        } catch (PropertyVetoException ex) {
+            LOG.log(Level.SEVERE, "Error al maximizar frame: {0}", ex.getMessage());
+        }
+
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {
+        }
+    }
+    
+    protected void RegistroFugas() {
+        RegistroFugas frame = new RegistroFugas();
         frame.setSize(this.getToolkit().getScreenSize());
         frame.setVisible(true);
         desktop.add(frame);
@@ -1817,7 +1852,6 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuArchivoSalir;
     private javax.swing.JMenuItem jMenuArchivoVehiculo;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
@@ -1844,9 +1878,9 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuNormasDefectos;
     private javax.swing.JMenuItem jMenuNormasPermisibles;
     private javax.swing.JMenuItem jMenuNormasPermisibles2;
+    private javax.swing.JMenuItem jMenuNormasPermisibles3;
     private javax.swing.JMenuItem jMenuNormasTiposMedida;
     private javax.swing.JMenuItem jMenuSicov;
-    private javax.swing.JMenuItem jMenuSicov1;
     private javax.swing.JMenuItem jMenuUsuariosConsulta;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
@@ -1863,6 +1897,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem mnuRGeneral;
     private javax.swing.JMenuItem mnuRGeneral1;
     private javax.swing.JMenuItem mnuRGeneral2;
+    private javax.swing.JMenuItem mnuRGeneral3;
     private javax.swing.JMenuItem mnuReporteMotos;
     private javax.swing.JMenuItem mnuSuper;
     private javax.swing.JMenuItem reporteSic;

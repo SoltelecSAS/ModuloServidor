@@ -18,6 +18,7 @@ import java.util.List;
 import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.dtos.DatosCda;
 import com.soltelec.servidor.dtos.Abortos.Abortos;
+import com.soltelec.servidor.dtos.fugas.Fugas;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.CorantioquiaCornare;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosPruebaCorantioquia;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosVehiculoCorantioquia;
@@ -129,6 +130,52 @@ public class Reportes {
                         rc.getString("Nombre_usuario"));
                         
                     listaDatos.add(aborto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Genera una lista con todos los datos
+        return listaDatos;
+    }
+
+    public static List<Fugas> getFugas(Date fechaInicio, Date fechaFin) {
+
+        List<Fugas> listaDatos = new ArrayList<>();
+        String consulta = Consultas.getFugas();
+
+        // Formateador para la fecha en el formato que deseas
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+            PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+            // Añadir parámetros de la consulta (los que aparecen como ? en la consulta)
+            consultaDagma.setDate(1, new java.sql.Date(fechaInicio.getTime())); // Selecciona el primer ?
+            consultaDagma.setDate(2, new java.sql.Date(fechaFin.getTime())); // Selecciona el segundo ?
+
+            // rc representa el resultado de la consulta
+            try (ResultSet rc = consultaDagma.executeQuery()) {
+                while (rc.next()) {
+                    // Formatear la fecha antes de agregarla al objeto
+                    String fechaAbortoFormateada = dateFormat.format(rc.getTimestamp("CURDATE"));
+                    String serial = rc.getString("serialresolucion");
+
+                    String serialFormateado = serial.split(";").length > 1 ? serial.split(";")[0] : serial;
+                    String esAprobada = rc.getInt("aprobada") == 1 ? "APROBADA" : "REPROBADA";
+                    
+                    // Colocar datos según cada columna que encuentres
+                    Fugas fuga = new Fugas(
+                        rc.getString("num_analizador"), 
+                        serialFormateado,
+                        "0."+rc.getString("pef"),
+                        fechaAbortoFormateada, 
+                        rc.getString("Nombre_usuario"),
+                        esAprobada
+                    );
+                        
+                    listaDatos.add(fuga);
                 }
             }
         } catch (SQLException e) {
@@ -736,27 +783,58 @@ public class Reportes {
                 while (rc.next()) {
                     //Colocara datos segun cada fila que encuentre
 
+                    if (
+                    rc.getString("serial_nuevo") == null 
+                    || rc.getString("serial_nuevo")
+                            .startsWith("Serial")) continue;
+
                     //Añade los datos del cda
                     listaDatosCda.add(datosDelCda);
 
-                    String[] seriales = rc.getString("serial_analizador").split(";"); //['Banco','kit','termohigrometro']
+                     //['Banco','kit','termohigrometro']
 
-                    EquipoAnalizadorBoyaca equipo = new EquipoAnalizadorBoyaca();
-                    equipo.setVrPef("0."+rc.getString("pef"));
-                    equipo.setNoSerieBanco(seriales[0]);
-                    equipo.setMarcaAnalizador(rc.getString("marca_analizador"));
-                    equipo.setNoSerieAnalizador(rc.getString("serial_analizador"));
-                    equipo.setHcBaja(redondeoSegunNorma(rc.getBigDecimal("bm_hc")));
-                    equipo.setCoBaja(redondeoSegunNorma(rc.getBigDecimal("bm_co")));
-                    equipo.setCo2Baja(redondeoSegunNorma(rc.getBigDecimal("bm_co2")));
-                    equipo.setHcAlta(redondeoSegunNorma(rc.getBigDecimal("alta_hc")));
-                    equipo.setCoAlta(redondeoSegunNorma(rc.getBigDecimal("alta_co")));
-                    equipo.setCo2Alta(redondeoSegunNorma(rc.getBigDecimal("alta_co2")));
-                    equipo.setFechaVerificacion(rc.getString("verificacion_gases"));
-                    equipo.setSoftware(software);
-                    equipo.setVSoftware(vSoftware);
+                    if (rc.getString("serial_analizador") != null) {
+                        String[] seriales = rc.getString("serial_analizador").split(";");
+                        EquipoAnalizadorBoyaca equipo = new EquipoAnalizadorBoyaca();
+                        equipo.setVrPef("0."+rc.getString("pef"));
+                        equipo.setNoSerieBanco(seriales[0]);
+                        equipo.setMarcaAnalizador(rc.getString("marca_analizador"));
+                        equipo.setNoSerieAnalizador(rc.getString("serial_analizador"));
+                        equipo.setHcBaja(redondeoSegunNorma(rc.getBigDecimal("bm_hc")));
+                        equipo.setCoBaja(redondeoSegunNorma(rc.getBigDecimal("bm_co")));
+                        equipo.setCo2Baja(redondeoSegunNorma(rc.getBigDecimal("bm_co2")));
+                        equipo.setHcAlta(redondeoSegunNorma(rc.getBigDecimal("alta_hc")));
+                        equipo.setCoAlta(redondeoSegunNorma(rc.getBigDecimal("alta_co")));
+                        equipo.setCo2Alta(redondeoSegunNorma(rc.getBigDecimal("alta_co2")));
+                        equipo.setFechaVerificacion(rc.getString("verificacion_gases"));
+                        equipo.setSoftware(software);
+                        equipo.setVSoftware(vSoftware);
 
-                    equipoAnalizador.add(equipo);
+                        equipoAnalizador.add(equipo);
+                    }else if (rc.getString("serial_nuevo") != null){
+                        String[] serialesNuevos = rc.getString("serial_nuevo").split("~");
+                        String serialesAnalizador= "";
+                        System.out.println("Seriales nuevos: "+ rc.getString("serial_nuevo"));
+                        serialesAnalizador = serialesNuevos[2].split(";")[0];
+                        
+                        
+                        EquipoAnalizadorBoyaca equipo = new EquipoAnalizadorBoyaca();
+                        equipo.setVrPef(serialesNuevos[2].split("-")[0]);
+                        equipo.setNoSerieBanco(serialesAnalizador.replace(equipo.getVrPef()+"-", ""));
+                        equipo.setMarcaAnalizador(serialesNuevos[1].split(";")[0]);
+                        equipo.setNoSerieAnalizador(equipo.getNoSerieBanco());
+                        equipo.setHcBaja(redondeoSegunNorma(rc.getBigDecimal("bm_hc")));
+                        equipo.setCoBaja(redondeoSegunNorma(rc.getBigDecimal("bm_co")));
+                        equipo.setCo2Baja(redondeoSegunNorma(rc.getBigDecimal("bm_co2")));
+                        equipo.setHcAlta(redondeoSegunNorma(rc.getBigDecimal("alta_hc")));
+                        equipo.setCoAlta(redondeoSegunNorma(rc.getBigDecimal("alta_co")));
+                        equipo.setCo2Alta(redondeoSegunNorma(rc.getBigDecimal("alta_co2")));
+                        equipo.setFechaVerificacion(rc.getString("verificacion_gases"));
+                        equipo.setSoftware(software);
+                        equipo.setVSoftware(vSoftware);
+                        equipoAnalizador.add(equipo);
+                    }
+                    
 
                     PruebasBoyaca datoPrueba = new PruebasBoyaca();
                     datoPrueba.setNoPrueba(rc.getString("consecutivo_prueba"));
@@ -951,15 +1029,42 @@ public class Reportes {
             //rc representa el resultado de la consulta pruebas
             try (ResultSet rc = consultaPruebas.executeQuery()) {
                 while (rc.next()) {
+                    
+                    boolean noExisteSerial = rc.getString("serial_nuevo") == null || rc.getString("serial_nuevo").startsWith("Serial");
+                    
+                    
+                    if(noExisteSerial || "0".equals(rc.getString("con_hoja_prueba")))
+                        continue;
+                    
                     Corponor dato = new Corponor();
                     dato.setFechaInicio(rc.getString("fecha_inicio_prueba"));
                     dato.setFechaFin(rc.getString("fecha_fin_prueba"));
                     dato.setMunicipio(datosDelCda.getCiudad());
-                    dato.setLugar(datosDelCda.getCiudad());
+                    dato.setLugar(datosDelCda.getDireccion());
                     dato.setNFur(rc.getString("con_hoja_prueba"));
                     dato.setNCertificado(rc.getString("CONSECUTIVE"));
-                    dato.setSerialAnalizador(rc.getString("serial_analizador"));
-                    dato.setPef(rc.getString("opacidad_preliminar") == null ? rc.getString("pef") : "");
+
+                    String serialAnalizador = rc.getString("serial_analizador");
+
+                    if (rc.getString("serial_analizador") != null) {
+
+                        dato.setSerialAnalizador(serialAnalizador);
+                        dato.setPef(rc.getString("opacidad_preliminar") == null ? "0."+rc.getString("pef") : "");
+
+                    }else if (rc.getString("serial_nuevo") != null){
+                        String[] serialesNuevos = rc.getString("serial_nuevo").split("~");
+                        if (serialesNuevos.length < 2) continue;
+                        
+                        String serialesAnalizador= "";
+                        serialesAnalizador = serialesNuevos[2].split(";")[0];
+
+                        String valorPef = serialesNuevos[2].split("-")[0];
+
+                        dato.setSerialAnalizador(serialesNuevos[2].replace(valorPef+"-", ""));
+                        dato.setPef(rc.getString("opacidad_preliminar") == null ? valorPef : "");
+                        
+                    }
+
                     dato.setMarcaSoftware("Soltelec");
                     dato.setVersionSoftware("1.7.3");
                     dato.setIdInspector(rc.getString("cedula"));
@@ -981,7 +1086,7 @@ public class Reportes {
                     dato.setTempMotor(redondeoSegunNorma(rc.getBigDecimal("temperatura_motor")));
                     dato.setTempFinal(redondeoSegunNorma(rc.getBigDecimal("temperatura_final_motor")));
                     dato.setRpmRalenti(redondeoSegunNorma(rc.getBigDecimal("rpm_ralenti")));
-                    dato.setRpmCruceroOGobernada(rc.getString("opacidad_preliminar") != null ? redondeoSegunNorma(rc.getBigDecimal("rpm_gobernada_pre")) : redondeoSegunNorma(rc.getBigDecimal("rpm_crucero")));
+                    dato.setRpmCruceroOGobernada(rc.getString("opacidad_preliminar") != null ? "" : redondeoSegunNorma(rc.getBigDecimal("rpm_crucero")));
                     dato.setHcRalenti(redondeoSegunNorma(rc.getBigDecimal("hc_ralenti")));
                     dato.setHcCrucero(redondeoSegunNorma(rc.getBigDecimal("hc_crucero")));
                     dato.setCoRalenti(redondeoSegunNorma(rc.getBigDecimal("co_ralenti")));
@@ -1041,7 +1146,7 @@ public class Reportes {
         return corponor;
     }
 
-    public static ReporteNtc getNtc(Date fechaInicio, Date fechaFin, int tipo){ //tipos: 0 -> NTC4983, 1 -> NTC5365, 2 -> NTC4231
+    public static ReporteNtc getNtc(Date fechaInicio, Date fechaFin, int tipo){ //tipos: 0 -> NTC4983, 1 -> NTC5365, 2 -> NTC4231, 3 -> any
         String[] condiciones = {"AND v.CLASS NOT IN (10) AND (tg.Nombre_gasolina = 'GASOLINA' OR tg.Nombre_gasolina = 'GAS - GASOLINA')", "AND v.CLASS IN (10)", "AND tg.Nombre_gasolina = 'DIESEL'", ""}; 
 
         List<DatosCda> listaDatosCda = new ArrayList<>();
@@ -1087,6 +1192,9 @@ public class Reportes {
             //rc representa el resultado de la consulta pruebas
             try (ResultSet rc = consultaPruebas.executeQuery()) {
                 while (rc.next()) {
+
+                    if(rc.getBigDecimal("P_HC_ALTO_H") == null) continue;
+
                     //Añade los datos del cda
                     listaDatosCda.add(datosDelCda);
 
@@ -1137,6 +1245,9 @@ public class Reportes {
                     String catalizardor = rc.getString("LUGAR_TEMP").equals("C") ? "SI" : "NO";
 
                     String serialEquipo = rc.getString("serialEquipo");
+                    System.out.println("SerialEqipo = "+serialEquipo);
+
+                    if (!serialEquipo.contains("~")) continue;
 
                     String marcas = serialEquipo.split("~")[1];
                     String seriales = serialEquipo.split("~")[2];
@@ -1157,14 +1268,14 @@ public class Reportes {
                     //Datos del equipo otto utilizados para inspeccion
                     String
                     marcaAg = marcas.split(";")[0],
-                    modAg = serialEquipo.split("~")[3].split(";")[0],
+                    modAg = serialEquipo.split("~").length > 3 ? serialEquipo.split("~")[3].split(";")[0] : "",
                     serialAg = serialesAnalizador.split("-")[1],
                     marcaBg = marcas.split(";")[0],
-                    modBg = serialEquipo.split("~")[3].split(";")[1],
+                    modBg = serialEquipo.split("~").length > 3 ? serialEquipo.split("~")[3].split(";")[1] : "",
                     serialBg = serialesAnalizador.split("-").length < 3 ? serialesAnalizador.split("-")[1] : serialesAnalizador.split("-")[2],
                     pef = valorPef,
-                    serialE = serialEquipo.split("~")[3].split(";").length < 3 ? "" : serialEquipo.split("~")[3].split(";")[2],
-                    serialEOpa = serialEquipo.split("~")[3].split(";").length < 2 ? "" : serialEquipo.split("~")[3].split(";")[1],
+                    serialE = serialEquipo.split("~").length > 3 ? (serialEquipo.split("~")[3].split(";").length < 3 ? "" : serialEquipo.split("~")[3].split(";")[2]) : "",
+                    serialEOpa = serialEquipo.split("~").length > 3 ?(serialEquipo.split("~")[3].split(";").length < 2 ? "" : serialEquipo.split("~")[3].split(";")[1]) : "",
                     marcaRpm = marcas.split(";")[1],
                     serialRpm = serialesKitRpm.split("/")[0],
                     marcaTempA = marcas.split(";")[2],
@@ -1652,6 +1763,7 @@ public class Reportes {
         String personaContactoCda = "";
         String emailCda = "";
         String telefonoCda = "";
+        String celularCda = "";
         String departamentoCda = "";
         String ciudadCda = "";
         String nResoluAutoridadAmbientalCda = "";
@@ -1673,6 +1785,7 @@ public class Reportes {
                 personaContactoCda = resultadoCda.getString("Nombre_usuario");
                 emailCda = resultadoCda.getString("correo");
                 telefonoCda = resultadoCda.getString("telefono");
+                celularCda = resultadoCda.getString("celular");
 
                 /* if (!resultadoCda.getBoolean("el_departamento_existe")) //Si el departamento no existe creara una columna llamada departamento
                     stmt.executeUpdate(crearDepartamento);
@@ -1712,7 +1825,7 @@ public class Reportes {
 
         return new DatosCda(
             cm, nombreCda, tipoDocumentoCda, nitCda, 
-            personaContactoCda, emailCda, telefonoCda, departamentoCda, 
+            personaContactoCda, emailCda, telefonoCda, celularCda, departamentoCda, 
             ciudadCda, direccionCda, nResoluAutoridadAmbientalCda, fechaResoluCda, 
             claseCda, nExpedienteAutoridadAmbientalCda, 
             nTotalOpacimetrosCda, nTotalOttosCda, nTotalMotos4t, nTotalMotos2t, normaAplicada);

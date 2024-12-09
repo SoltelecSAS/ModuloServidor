@@ -1,1 +1,1 @@
-mysql --defaults-extra-file=mysql.cnf --host=localhost --port=3306 copia < null
+mysql --defaults-extra-file=mysql.cnf --host=127.0.0.1 --port=3306 db_cda < "C:\\BACKUPS\\28-11-2024.sql"

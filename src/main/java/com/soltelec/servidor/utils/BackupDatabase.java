@@ -2,24 +2,20 @@
 package com.soltelec.servidor.utils;
 
 import com.soltelec.servidor.conexion.Conexion;
-import com.soltelec.servidor.igrafica.FrmBackup;
-import com.sun.org.apache.xml.internal.serializer.ToSAXHandler;
-import groovy.transform.ToString;
-import java.awt.HeadlessException;
-import java.io.BufferedReader;
+import com.soltelec.servidor.consultas.DatabaseBackup;
+
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import static jdk.nashorn.internal.objects.NativeRegExp.source;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class BackupDatabase {
 
@@ -29,10 +25,6 @@ public class BackupDatabase {
     static String folderPath = "";
     static String sourceFile = "";
     private static final Logger LOG = Logger.getLogger(BackupDatabase.class.getName());
-    private static String versionmysql;
-    private static String ubackup;
-    private static String port;
-    private static String dirBin;
 
     public static void main(String args[]) throws InterruptedException {
         //Restoredbfromsql("bd_saldana.sql");
@@ -41,300 +33,450 @@ public class BackupDatabase {
     }
 
     public static void Backupdbtosql(JLabel loading) throws InterruptedException {
-        loading.setVisible(true);
-        try {
-                
-            Properties properties = new Properties();
+        // Crear un diálogo de progreso indeterminado
+        JOptionPane pane = new JOptionPane("Creando...", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+        JDialog dialog = pane.createDialog("Mensaje");
+
+
+        // Declara una variable atómica para verificar si el hilo ya se ha ejecutado
+        AtomicBoolean backupExecuted = new AtomicBoolean(false);
+
+        // Ejecutar el respaldo de la base de datos en un hilo separado
+        Thread backupThread = new Thread(() -> {
+            // Verifica si el hilo aún no se ha ejecutado
+            if (!backupExecuted.getAndSet(true)) {
+                // Ejecuta la creación del respaldo en el hilo actual
+                int result = DatabaseBackup.createBackup();
+
+                // Cierra el diálogo de progreso en el hilo actual
+                dialog.dispose();
+
+                // Ejecuta el código relacionado con Swing en el EDT
+                SwingUtilities.invokeLater(() -> {
+                    // Muestra un cuadro de diálogo después de que el respaldo haya terminado
+                    if (result == 0) {
+                        loading.setVisible(false);
+                        JOptionPane.showMessageDialog(null, "Terminado.\nPuede observar el backup entre la lista de opciones de restauración", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Este computador debe tener instalado el mysql server y tener configurada la variable de entorno (C:\\Program Files\\MySQL\\MySQL Server x.x\\bin) para poder realizar esta accion. Contacte con soporte", "Mensaje", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }
+        });
+        backupThread.start();
+
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        pane.add(progressBar);
+        dialog.pack();
+        dialog.setVisible(true);
+    }
+
+    public static void Restoredbfromsql(String fileName, JLabel loading) throws InterruptedException {
+        // Crear un diálogo de progreso indeterminado
+        String[] credentials = pedirCredenciales(loading);
+
+        String puerto = credentials[2];
+        String dbName = credentials[3];
+        String ubicacion = "C:\\\\BACKUPS\\\\" + fileName;
+
+        String batchContent = String.format("mysql --defaults-extra-file=mysql.cnf --host=%s --port=%s %s < \"%s\"",
+                    "localhost", puerto, dbName, ubicacion);
+
+        JOptionPane pane = new JOptionPane("Importando... (esto puede tardar de 10 a 40 min)\nRecuerde que aunque cierre este programa la importacion seguira corriendo en segundo plano\n\nComando mysql ejecutado para la importacion:\n"+batchContent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+        JDialog dialog = pane.createDialog("Mensaje");
+
+        // Ejecutar el respaldo de la base de datos en un hilo separado
+        Thread backupThread = new Thread(() -> {
+
+            
+            // Realizar la importación del respaldo de la base de datos
+            int code = 1;
             try {
-                properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
-              
-                 
-                dbName = Conexion.getBaseDatos();
-                port =  Conexion.getPuerto();
-                dbUser = Conexion.getUsuario();
-                //Este usuario es usado para la version de mysql57 ya que no tiene password
-                ubackup = Conexion.getUsuario();
-                dbPass = Conexion.getContrasena();
-                folderPath = properties.getProperty("directoriobackup");
-                versionmysql = properties.getProperty("versionmysql");
-                dirBin = properties.getProperty("directorioMysql");
-            } catch (IOException ex) {
-                LOG.severe(ex.getMessage());
-            } 
+                code = DatabaseBackup.importBackup(fileName, credentials);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            int result = code;
+
+            // Verificar el resultado de la importación del respaldo
+            
+            // Ejecutar el resto del código relacionado con Swing en el EDT
+            SwingUtilities.invokeLater(() -> {
+                // Cuando el respaldo termine, cerrar el diálogo de progreso
+                dialog.dispose();
+                loading.setVisible(false);
+                // Muestra un cuadro de diálogo después de que el respaldo haya terminado
+                if (result == 0) {
+                    JOptionPane.showMessageDialog(null, "Importacion terminada con exito.\nCuando ingrese a la base de datos, \nencontrara la base de datos de "+ credentials[3]+" con los datos del backup", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                }else if(result == 1){
+                    JOptionPane.showMessageDialog(null, "Importacion cancelada. \nCerraremos el programa por seguridad.\ncodigo = "+result, "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                }else{
+                    JOptionPane.showMessageDialog(null, "codigo = "+result+"\nEste computador debe tener instalado el mysql server y tener configurada la variable de entorno (C:\\Program Files\\MySQL\\MySQL Server x.x\\bin) para poder realizar esta accion. Contacte con soporte", "Mensaje", JOptionPane.ERROR_MESSAGE);
+                }
+                
+            });
+            
+        });
+
+        // Iniciar el hilo
+        backupThread.start();
+
+        
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        pane.add(progressBar);
+        dialog.pack();
+
+        // Obtener el tamaño de la pantalla
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        // Calcular el centro horizontal y ajustar la posición vertical (Y)
+        int centerX = (screenSize.width - dialog.getWidth()) / 2;
+        int yPosition = 100; // Ajusta esta coordenada según sea necesario
+
+        // Ajustar la posición del diálogo
+        dialog.setLocation(centerX, yPosition);
+
+        dialog.setVisible(true);
+    }
+
+    /* public static void Backupdbtosql(JLabel loading) throws InterruptedException {
+        loading.setVisible(true);
+        try 
+        {
+            dbName = Conexion.getBaseDatos();
+            port = Conexion.getPuerto();
+            dbUser = Conexion.getUsuario();
+            dbPass = Conexion.getContrasena();
+            folderPath = "C:\\\\BACKUPS\\\\";
+    
             String nombreArchivo = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
             File f1 = new File(folderPath);
             if (!f1.exists()) {
                 f1.mkdir();
             }
             String savePath = folderPath + nombreArchivo + ".sql";
-            String executeCmd;
-            System.out.println("savepath:" +savePath);
-           System.out.println("en dir bin es: "+ dirBin); 
-            if (versionmysql.equals("mysql57")) {
-                System.out.println("entre en la version 5.7");
-                executeCmd = "C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysqldump --opt -u"+dbUser+ " -p"+ dbPass + " -B "+ dbName + " -r " + savePath;
-               // System.out.println("lo que se ejecuta en el cmd: "+ executeCmd);
-                System.out.println("Finalice GBackup de la Base de Datos");
+            
+            // Obtener la IP del servidor desde Conexion.getIpServidor()
+            String host = Conexion.getIpServidor();
+    
+            // Crear archivo .cnf temporal para las credenciales
+            String mysqlCnfPath = System.getProperty("user.dir") + File.separator + "mysql.cnf";
+            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, dbPass);
+            
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(mysqlCnfPath))) {
+                writer.write(mysqlCnfContent);
+            }
+    
+            // Crear el comando mysqldump usando la IP del servidor
+            String mysqldumpCmd = String.format("mysqldump --defaults-extra-file=%s --host=%s --port=%s --single-transaction %s",
+                    mysqlCnfPath, host, port, dbName);
+            
+            System.out.println("Comando ejecutado: " + mysqldumpCmd);
+    
+            // Usar ProcessBuilder para ejecutar el comando y redirigir la salida al archivo
+            ProcessBuilder processBuilder = new ProcessBuilder(mysqldumpCmd.split(" "));
+            processBuilder.redirectOutput(new File(savePath));  // Redirigir la salida a un archivo
+            processBuilder.redirectErrorStream(true);  // Fusionar error y salida estándar
+    
+            // Ejecutar el proceso
+            Process process = processBuilder.start();
+            int processComplete = process.waitFor();
+    
+            if (processComplete == 0) {
+                JOptionPane.showMessageDialog(null, "BackUp finalizado correctamente");
             } else {
-                
-                System.out.println("entre en la version 5.6 en el" + dirBin + "Gmysqldump -u " + dbUser + " -p*****" + " --databases " + dbName + " > " + savePath);
-               // executeCmd = "C:\\Program Files\\MySQL\\MySQL Server 5.6\\bin\\mysqldump --opt -u"+dbUser+ " -p"+ dbPass + " -B "+ dbName + " -r " + savePath;
-               executeCmd = "C:\\Program Files\\MySQL\\MySQL Server 5.6\\bin\\mysqldump  -u "+dbUser+ " -p "+ dbPass + " --routines "+ dbName + " > " + savePath;
-               
-               // System.out.println("lo que se ejecuta en el cmd: "+ executeCmd);
-               // System.out.println("Finalice GBackup de la Base de Datos");
-             }                       
-            
-            System.out.println("lo que se ejecuta en el cmd "+ executeCmd);
-            Process runtimeProcess = Runtime.getRuntime().exec(executeCmd);
-            
-            int processComplete = runtimeProcess.waitFor();
-            InputStream inputstream = runtimeProcess.getErrorStream();
-            InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
-            BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
-            System.out.println(bufferedreader.readLine());
-            do{
-                  
-                if (processComplete == 0) {                                     
-                    JOptionPane.showMessageDialog(null, "BackUp finalizado correctamente");
+                JOptionPane.showMessageDialog(null, "Fallo el proceso. Código de salida: " + processComplete);
+            }
+    
+            // Eliminar el archivo mysql.cnf temporal
+            File mysqlCnfFile = new File(mysqlCnfPath);
+            if (mysqlCnfFile.exists()) {
+                boolean deleted = mysqlCnfFile.delete();
+                if (deleted) {
+                    LOG.info("Archivo mysql.cnf eliminado exitosamente");
                 } else {
-                   JOptionPane.showMessageDialog(null, "Fallo el proceso, Procces completado 0");
-                   break;
+                    LOG.warning("No se pudo eliminar el archivo mysql.cnf");
                 }
-            }while(processComplete!=0);
+            }
+    
             loading.setVisible(false);
-             
-            
+    
         } catch (IOException ex) {
-            LOG.severe(ex.toString()); // Esto proporciona información detallada sobre la excepción
-            ex.printStackTrace(); // Imprime la traza completa de la excepción en la consola
+            LOG.severe("Error de E/S: " + ex.getMessage());
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Fallo el proceso IOException: " + ex.getMessage());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            LOG.severe("Proceso interrumpido: " + ex.getMessage());
+        }
+    } */
+
+    public static String[] pedirCredenciales(JLabel loading) {
+        // Crear los campos de entrada con valores predeterminados
+        JTextField usuarioField = new JTextField(Conexion.getUsuario());
+        JPasswordField contrasenaField = new JPasswordField(Conexion.getContrasena());
+        JTextField puertoField = new JTextField(Conexion.getPuerto());
+        JTextField baseDatosField = new JTextField("db_cda");
+    
+        // Organizar los campos en un panel
+        JPanel panel = new JPanel(new GridLayout(0, 2));
+        panel.add(new JLabel("Usuario:"));
+        panel.add(usuarioField);
+        panel.add(new JLabel("Contraseña:"));
+        panel.add(contrasenaField);
+        panel.add(new JLabel("Puerto:"));
+        panel.add(puertoField);
+        panel.add(new JLabel("Nombre DB:"));
+        panel.add(baseDatosField);
+    
+        // Mostrar el cuadro de diálogo
+        int opcion = JOptionPane.showConfirmDialog(
+            null,
+            panel,
+            "Ingrese las credenciales de la db local",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+    
+        if (opcion == JOptionPane.OK_OPTION) {
+            // Retornar los valores ingresados en un array de String
+            return new String[] {
+                usuarioField.getText(),
+                new String(contrasenaField.getPassword()),
+                puertoField.getText(),
+                baseDatosField.getText()
+            };
+        } else {
+            loading.setVisible(false);
+            // Lanzar excepción si el usuario cancela
+            throw new RuntimeException("El usuario no seleccionó las credenciales");
         }
     }
+    
 
-    public static void Restoredbfromsql(String s) {
+    public static void Restoredbfromsqllll(String fileName) {
         try {
-            String dbName="";
+            String[] userAndPassword = getUserAndPassword();
 
+            String dbUser = null; // Usuario de la base de datos
+            String dbPass = null; // Contraseña del usuario
+
+            if (userAndPassword != null) {
+                dbUser = userAndPassword[0];
+                dbPass = userAndPassword[1];
+            }else{
+
+            }
+
+            // Datos de conexión
+            String dbName = "db_cda"; // Nombre de la base de datos
+            String dbHost = "127.0.0.1"; // Dirección IP del servidor (localhost o IP en red local)
+            String dbPort = "3306"; // Puerto de MySQL
+            
+            String destinationFile = "";
+
+            // Cargar propiedades desde un archivo de configuración
             Properties properties = new Properties();
             try {
                 properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
-                dbName = Conexion.getBaseDatos();
-                port = Conexion.getPuerto();
-                dbUser = Conexion.getUsuario();
-                dbPass = Conexion.getContrasena();
-                 
-                sourceFile = (properties.getProperty("directoriobackup")) + s;
-                 JOptionPane.showMessageDialog(null, "source "+sourceFile);
-                dirBin = properties.getProperty("directorioMysql");
+
+                // Ruta donde se almacenará el archivo de respaldo
+                destinationFile = properties.getProperty("directoriobackup") + fileName;
+                JOptionPane.showMessageDialog(null, "Destino: " + destinationFile);
+            } catch (IOException ex) {
+                LOG.severe("Error al cargar el archivo de propiedades: " + ex.getMessage());
+                return;
+            }
+
+            // Crear el comando para realizar el respaldo
+            String executeCmd = String.format(
+                "mysqldump -h %s -P %s -u %s -p%s %s > \"%s\"",
+                dbHost, dbPort, dbUser, dbPass, dbName, destinationFile
+            );
+
+            // Imprimir el comando para verificar
+            System.out.println("Se ejecuta en cmd: " + executeCmd);
+
+            // Ejecutar el proceso
+            Process runtimeProcess = Runtime.getRuntime().exec(new String[]{"bash", "-c", executeCmd});
+            int processComplete = runtimeProcess.waitFor();
+
+            // Verificar si el proceso fue exitoso
+            if (processComplete == 0) {
+                JOptionPane.showMessageDialog(null, "Restauracion de la base de datos exitoso");
+            } else {
+                JOptionPane.showMessageDialog(null, "Falló el proceso de respaldo de la base de datos");
+            }
+        } catch (IOException | InterruptedException ex) {
+            LOG.severe("Error durante el respaldo: " + ex.getMessage());
+        }
+    }
+
+    public static String[] getUserAndPassword() {
+        // Crear el panel
+        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+        
+        // Etiquetas y campos de entrada
+        JLabel userLabel = new JLabel("Usuario:");
+        JTextField userField = new JTextField(20);
+
+        JLabel passwordLabel = new JLabel("Contraseña:");
+        JPasswordField passwordField = new JPasswordField(20);
+
+        // Añadir los componentes al panel
+        panel.add(userLabel);
+        panel.add(userField);
+        panel.add(passwordLabel);
+        panel.add(passwordField);
+
+        // Mostrar el cuadro de diálogo
+        int option = JOptionPane.showConfirmDialog(
+            null,
+            panel,
+            "Credenciales de la Base de Datos",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        // Verificar si el usuario presionó OK
+        if (option == JOptionPane.OK_OPTION) {
+            // Retornar usuario y contraseña como un array
+            return new String[]{userField.getText(), new String(passwordField.getPassword())};
+        } else {
+            // Retornar null si se cancela
+            return null;
+        }
+    }
+
+    /* public static void Restoredbfromsql(String s) {
+        try {
+            String dbName = "";
+            String port = "";
+            String dbUser = "";
+            String dbPass = "";
+            String sourceFile = "";
+    
+            Properties properties = new Properties();
+            try {
+                // Cargar las propiedades desde el archivo "conexion.properties"
+                properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
+                dbName = Conexion.getBaseDatos(); // Obtener nombre de la base de datos
+                port = Conexion.getPuerto(); // Obtener el puerto de la base de datos
+                dbUser = Conexion.getUsuario(); // Obtener el usuario
+                dbPass = Conexion.getContrasena(); // Obtener la contraseña
+                
+                // Ruta del archivo de respaldo
+                sourceFile = properties.getProperty("directoriobackup") + s;
+                JOptionPane.showMessageDialog(null, "source " + sourceFile);
             } catch (IOException ex) {
                 LOG.severe(ex.getMessage());
             }
-            //creardb();
-          //  String executeCmd = "" + dirBin + "mysql -u " + dbUser + " -p" + dbPass +" -h"+Conexion.getIpServidor() +" "+ dbName + " -e source  " + sourceFile;               
-           
-            String executeCmd =dirBin + "mysql  -u" + dbUser+ "-p" + dbPass + " "+dbName+" < "+ sourceFile;
-            //se ejecuta en cmd: C:\Program Files\MySQL\MySQL Server 5.6\bin\mysql -P 3306db_cda-uroot-p50lt3l3c545-e C:\BACKUPS\botanico.sql  sourceFile;
-           // String executeCmd ="mysql -u " + dbUser+ dbName + "-u" + dbUser, "-p" + dbPass, "-e "+ source " + sourceFile;
-            System.out.println("se ejecuta en cmd: "+executeCmd);
-           
+    
+            // Crear el comando para ejecutar en el sistema, sin necesidad de especificar la ruta completa de mysql
+            String executeCmd = "mysql -u " + dbUser + " -p" + dbPass + " " + dbName + " < \"" + sourceFile + "\"";
+            
+            // Imprimir el comando para verificar la ejecución
+            System.out.println("Se ejecuta en cmd: " + executeCmd);
+            
+            // Ejecutar el proceso
             Process runtimeProcess = Runtime.getRuntime().exec(executeCmd);
             int processComplete = runtimeProcess.waitFor();
+    
+            // Verificar si el proceso fue exitoso
             if (processComplete == 0) {
-                JOptionPane.showMessageDialog(null, "Reestauracion de la base de datos exitosa");
+                JOptionPane.showMessageDialog(null, "Restauración de la base de datos exitosa");
             } else {
-                JOptionPane.showMessageDialog(null, "Fallo el proceso de creacion de BackUp");
+                JOptionPane.showMessageDialog(null, "Falló el proceso de restauración de la base de datos");
             }
         } catch (IOException | InterruptedException | HeadlessException ex) {
             LOG.severe(ex.getMessage());
         }
+    } */
 
-    }
+    
+    /* public static void Restoredbfromsql(String parametrosr) {
+        // Crear un diálogo de progreso indeterminado
+        JOptionPane pane = new JOptionPane("Restaurando base de datos...", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+        JDialog dialog = pane.createDialog("Mensaje");
 
-    private static void creardb() {
-        try {
-            Properties properties = new Properties();
-            properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
-            dirBin = properties.getProperty("directorioMysql");
-            String[] executeCmd2 = new String[]{"" + dirBin + "gmysql", "-P " + port, "-u" + dbUser, "-p" + dbPass, "-e" + " DROP DATABASE  " + dbName + " "};
-            Process runtimeProcess2 = Runtime.getRuntime().exec(executeCmd2);
-            int processComplete = runtimeProcess2.waitFor();
-             if (processComplete == 0) {
-                JOptionPane.showMessageDialog(null, "SE HIZO UN DROP A LA BD");
-            } else {
-                JOptionPane.showMessageDialog(null, "Fallo el proceso");
+        // Crear el hilo para realizar la restauración de la base de datos
+        Thread restoreThread = new Thread(() -> {
+            String dbName = "";
+            String dbUser = "";
+            String dbPass = "";
+            String sourceFile = "";
+
+            try {
+                Properties properties = new Properties();
+                properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
+                dbName = Conexion.getBaseDatos();
+                dbUser = Conexion.getUsuario();
+                dbPass = Conexion.getContrasena();
+                sourceFile = properties.getProperty("directoriobackup") + parametrosr;
+                JOptionPane.showMessageDialog(null, "Source file: " + sourceFile);
+
+                // Comando para iniciar mysql con credenciales
+                String[] executeCmd = {"mysql", "-u", dbUser, "-p" + dbPass, dbName};
+
+                ProcessBuilder processBuilder = new ProcessBuilder(executeCmd);
+                processBuilder.redirectErrorStream(true);
+                Process process = processBuilder.start();
+
+                // Enviar el archivo SQL como entrada al proceso
+                try (OutputStream outputStream = process.getOutputStream();
+                    FileInputStream fis = new FileInputStream(sourceFile);
+                    BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    outputStream.flush();
+
+                    // Leer salida del proceso
+                    String line;
+                    System.out.println("Salida del proceso:");
+                    while ((line = stdInput.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                }
+
+                int processComplete = process.waitFor();
+
+                // Verificar el resultado de la restauración y actualizar la UI en el EDT
+                SwingUtilities.invokeLater(() -> {
+                    dialog.dispose();
+                    if (processComplete == 0) {
+                        JOptionPane.showMessageDialog(null, "Restauración de la base de datos exitosa", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Falló el proceso de restauración de la base de datos", "Mensaje", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            } catch (IOException | InterruptedException ex) {
+                LOG.severe(ex.getMessage());
+                SwingUtilities.invokeLater(() -> {
+                    dialog.dispose();
+                    JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage(), "Mensaje", JOptionPane.ERROR_MESSAGE);
+                });
             }
-            executeCmd2 = new String[]{"" + dirBin + "gmysql", "-P " + port, "-u" + dbUser, "-p" + dbPass, "-e" + " CREATE DATABASE " + dbName + " "};
-            runtimeProcess2 = Runtime.getRuntime().exec(executeCmd2);
-            processComplete = runtimeProcess2.waitFor();
-              if (processComplete == 0) {
-                JOptionPane.showMessageDialog(null, "LOGRE CREAR LA BD, y EMPIEZO A IMPLEMETAR EL RESTORED BD ");
-            } else {
-                JOptionPane.showMessageDialog(null, "Fallo el proceso");
-            }
-        } catch (IOException | InterruptedException e) {
-            LOG.severe(e.getMessage());
-        }
-    }
+        });
+
+        // Iniciar el hilo de restauración
+        restoreThread.start();
+
+        // Mostrar la barra de progreso indeterminada
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        pane.add(progressBar);
+        dialog.pack();
+        dialog.setVisible(true);
+    } */
 
 }
-
-//package com.soltelec.servidor.utils;
-//
-//import java.awt.HeadlessException;
-//import java.io.BufferedReader;
-//import java.io.BufferedWriter;
-//import java.io.File;
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.io.InputStream;
-//import java.io.InputStreamReader;
-//import java.text.SimpleDateFormat;
-//import java.util.Date;
-//import java.util.Properties;
-//import java.util.logging.Logger;
-//import javax.swing.JOptionPane;
-//
-//public class BackupDatabase {
-//
-//    static String dbName = "";
-//    static String dbUser = "";
-//    static String dbPass = "";
-//    static String folderPath = "";
-//    static String sourceFile = "";
-//    private static final Logger LOG = Logger.getLogger(BackupDatabase.class.getName());
-//    private static String versionmysql;
-//    private static String ubackup;
-//    private static String port;
-//    private static String urljdbc;
-//    private static String defaultFile;
-//
-//    public static void main(String args[]) {
-//        crearArchivoCnf();
-//        Restoredbfromsql("defectos.sql");
-//    }
-//
-//    public static void Backupdbtosql() {
-//        try {
-//
-//            Properties properties = new Properties();
-//            try {
-//                properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
-//                dbName = properties.getProperty("namebd");
-//                port = properties.getProperty("port");
-//                dbUser = properties.getProperty("usuario");
-//                urljdbc = properties.getProperty("urljdbc");
-//                //Este usuario es usado para la version de mysql57 ya que no tiene password
-//                ubackup = properties.getProperty("usuariobackup");
-//                dbPass = properties.getProperty("password");
-//                folderPath = properties.getProperty("directoriobackup");
-//                versionmysql = properties.getProperty("versionmysql");
-//                defaultFile = System.getProperty("user.dir").concat("\\conf.cnf");
-//            } catch (IOException ex) {
-//                LOG.severe(ex.getMessage());
-//            }
-//
-//            crearArchivoCnf();
-//            String nombreArchivo = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-//            File f1 = new File(folderPath);
-//            if (!f1.exists()) {
-//                f1.mkdir();
-//            }
-//            String savePath = folderPath + nombreArchivo + ".sql";
-//            String executeCmd;
-//            executeCmd = String.format("mysql "
-//                    + "--defaults-file=%s "
-//                    + "--protocol=tcp "
-//                    + "--host=%s "
-//                    + "--user=%s "
-//                    + "--port=%s  "
-//                    + "--default-character-set=utf8 "
-//                    + "--comments < %s", defaultFile, urljdbc, ubackup, dbUser, port, savePath);
-////                executeCmd = "mysqldump -u" + ubackup + dbName + " -r " + savePath;
-//            Process runtimeProcess = Runtime.getRuntime().exec(executeCmd);
-//            int processComplete = runtimeProcess.waitFor();
-//            InputStream inputstream = runtimeProcess.getErrorStream();
-//            InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
-//            BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
-//            System.out.println(bufferedreader.readLine());
-//            if (processComplete == 0) {
-//                JOptionPane.showMessageDialog(null, "Se completo el proceso");
-//            } else {
-//                JOptionPane.showMessageDialog(null, "Fallo el proceso");
-//            }
-//        } catch (IOException | InterruptedException ex) {
-//            LOG.severe(ex.getMessage());
-//            JOptionPane.showMessageDialog(null, "Fallo el proceso " + ex.getMessage());
-//        }
-//    }
-//
-//    public static void Restoredbfromsql(String s) {
-//        try {
-//            Properties properties = new Properties();
-//            try {
-//                properties.load(CargarArchivos.cargarArchivo("conexion.properties"));
-//                dbName = properties.getProperty("namebd");
-//                port = properties.getProperty("port");
-//                dbUser = properties.getProperty("usuario");
-//                urljdbc = properties.getProperty("urljdbc");
-//                //Este usuario es usado para la version de mysql57 ya que no tiene password
-//                ubackup = properties.getProperty("usuariobackup");
-//                dbPass = properties.getProperty("password");
-//                folderPath = properties.getProperty("directoriobackup");
-//                versionmysql = properties.getProperty("versionmysql");
-//                defaultFile = System.getProperty("user.dir").concat("\\conf.cnf");
-//                sourceFile = (properties.getProperty("directoriobackup")) + s;
-//            } catch (IOException ex) {
-//                LOG.severe(ex.getMessage());
-//            }
-//            String executeCmd = String.format("cmd /c start /wait mysql "
-//                    + "--defaults-file=%s "
-//                    + "--protocol=tcp "
-//                    + "--host=%s "
-//                    + "--user=%s "
-//                    + "--port=%s  "
-//                    + "--default-character-set=utf8 "
-//                    + "--comments < %s", defaultFile, urljdbc, dbUser, port, sourceFile);
-//            Process runtimeProcess = Runtime.getRuntime().exec(executeCmd);
-//            int processComplete = runtimeProcess.waitFor();
-//            if (processComplete == 0) {
-//                JOptionPane.showMessageDialog(null, "Se completo el proceso");
-//            } else {
-//                JOptionPane.showMessageDialog(null, "Fallo el proceso");
-//            }
-//        } catch (IOException | InterruptedException | HeadlessException ex) {
-//            LOG.severe(ex.getMessage());
-//        }
-//
-//    }
-//
-//    private static void creardb() {
-//        try {
-//            String[] executeCmd2 = new String[]{"mysql", "-P " + port, "-u" + dbUser, "-p" + dbPass, "-e" + " CREATE DATABASE " + dbName + " "};
-//            Process runtimeProcess2 = Runtime.getRuntime().exec(executeCmd2);
-//            int processComplete = runtimeProcess2.waitFor();
-//            System.out.println(processComplete);
-//        } catch (IOException | InterruptedException e) {
-//            LOG.severe(e.getMessage());
-//        }
-//    }
-//
-//    private static void crearArchivoCnf() {
-//        try {
-//            String data = "[client]\n"
-//                    + "password=\"admin\"";
-//            File file = new File("conf.cnf");
-//            if (!file.exists()) {
-//                file.createNewFile();
-//            }
-//            //true = append file
-//            FileWriter fileWritter = new FileWriter(file.getName(), true);
-//            BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
-//            bufferWritter.write(data);
-//            bufferWritter.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-//}

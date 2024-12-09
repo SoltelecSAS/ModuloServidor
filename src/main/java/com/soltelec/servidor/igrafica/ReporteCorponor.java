@@ -5,53 +5,31 @@
  */
 package com.soltelec.servidor.igrafica;
 
-import com.soltelec.servidor.conexion.PersistenceController;
 import com.soltelec.servidor.consultas.Reportes;
 
 import static com.soltelec.servidor.conexion.PersistenceController.getEntityManager;
 import com.soltelec.servidor.dao.CdaJpaController;
 import com.soltelec.servidor.dao.CertificadosJpaController;
 import com.soltelec.servidor.dao.HojaPruebasJpaController;
-import com.soltelec.servidor.dao.PruebasJpaController;
-import com.soltelec.servidor.dao.SoftwareJpaController;
-import com.soltelec.servidor.dtos.DatosCda;
 import com.soltelec.servidor.dtos.reporte_corponor.Corponor;
-import com.soltelec.servidor.model.CalibracionDosPuntos;
-import com.soltelec.servidor.model.Calibraciones;
 import com.soltelec.servidor.model.Cda;
 import com.soltelec.servidor.model.Certificados;
-import com.soltelec.servidor.model.Defxprueba;
-import com.soltelec.servidor.model.DefxpruebaPK;
-import com.soltelec.servidor.model.HojaPruebas;
 import com.soltelec.servidor.model.Medidas;
-import com.soltelec.servidor.model.Propietarios;
 import com.soltelec.servidor.model.Pruebas;
 import com.soltelec.servidor.model.Reinspeccion;
-import com.soltelec.servidor.model.Software;
-import com.soltelec.servidor.model.Vehiculos;
 import com.soltelec.servidor.utils.GenericExportExcel;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
-import com.soltelec.servidor.model.Equipos;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
 
 /**
  * todos los clientes de los cda's deben poder generar este reporte para ser
@@ -62,21 +40,14 @@ import javax.persistence.TypedQuery;
  * @fecha 01/03/2018
  */
 public class ReporteCorponor extends javax.swing.JInternalFrame {
-//public class ReporteSuperintendenciaVijia extends javax.swing.JFrame {
 
     private DefaultTableModel modeloPrueba;
     private DefaultTableModel modeloInfoVehiculo;
-    private DefaultTableModel modeloMedidas;
-    private DefaultTableModel modeloDatosPropietarioVehiculo;
     private DefaultTableModel resultadoPrueba;
-    private DefaultTableModel modeloDatosGeneralesInspeccion;
     private DefaultTableModel defectosYruido;
     private Object[] cal2 = new Object[60];
 
-    private static final Logger LOG = Logger.getLogger(ReporteCAR.class.getName());
-    private SimpleDateFormat formatoFecha;
     private DateFormat formatoFechas;
-    private SimpleDateFormat sdfH;
 
     public ReporteCorponor() {
         super("Reporte Corponor",
@@ -97,7 +68,7 @@ public class ReporteCorponor extends javax.swing.JInternalFrame {
          */
         modeloPrueba = new DefaultTableModel();
         modeloPrueba.addColumn("Fecha Inicio de Prueba");
-        modeloPrueba.addColumn("Fecha Inicio de Prueba");
+        modeloPrueba.addColumn("Fecha fin de Prueba");
         modeloPrueba.addColumn("Municipio de Inspeccion");
         modeloPrueba.addColumn("Lugar de prueba");
         modeloPrueba.addColumn("Numero de Inspeccion/FUR");
@@ -373,8 +344,6 @@ public class ReporteCorponor extends javax.swing.JInternalFrame {
     private void fillDataa(Date fechaInicial, Date fechaFinal) {
         initModels();
         DateFormat formatoFechas = new SimpleDateFormat("yyyy-MM-dd");
-        formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
-        sdfH = new SimpleDateFormat("YYYY/MM/dd HH:mm");
         HojaPruebasJpaController hpjc = new HojaPruebasJpaController();
         List<Pruebas> lstPruebas = hpjc.findByDatePruebas(fechaInicial, fechaFinal);
         //Tamaño de datos 
@@ -656,7 +625,6 @@ public class ReporteCorponor extends javax.swing.JInternalFrame {
     private javax.swing.JTable tblDefectosYRuido;
 
     private void cargarInformacionCda(Pruebas pruebasebas) {
-        formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
         formatoFechas = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         CdaJpaController cda = new CdaJpaController();
         Cda mcda = cda.findCda(1);

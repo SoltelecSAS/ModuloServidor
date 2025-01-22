@@ -11,6 +11,7 @@ import com.soltelec.servidor.dtos.reportes_ntcs.DatosGeneralesNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.EquiposSoftOttoNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.PropietariosNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.ReporteNtc;
+import com.soltelec.servidor.dtos.reportes_ntcs.ResultadosDieselNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.ResultadosOttoNtc;
 import com.soltelec.servidor.dtos.reportes_ntcs.VehiculoNtc;
 import com.soltelec.servidor.utils.GenericExportExcel;
@@ -39,11 +40,11 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
     private DefaultTableModel modeloPropietario;
     private DefaultTableModel modeloEquipoMedicion;
     private DefaultTableModel modeloDatosPrueba;
-    private DefaultTableModel modeloDatosGeneralesInspeccion;
     private DefaultTableModel modeloResultadoPrueba;
+    private DefaultTableModel modeloResultadoDiesel;
 
     public ReporteBucaramanga() {
-        super("Reporte Medellin (4983)",
+        super("Reporte Bucaramanga",
                 true, //resizable
                 true, //closable
                 false, //maximizable
@@ -65,6 +66,8 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         modeloCDA.addColumn("Ciudad");
         modeloCDA.addColumn("Número Resolución");
         modeloCDA.addColumn("Fecha Resolución");//9
+        modeloCDA.addColumn("Clase cda");//9
+        modeloCDA.addColumn("Norma aplicada");//9
 
         modeloEquipoMedicion = new DefaultTableModel();
         modeloEquipoMedicion.addColumn("Factor Equivalencia PEF");
@@ -109,14 +112,12 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         modeloDatosPrueba = new DefaultTableModel();
         modeloDatosPrueba.addColumn("Fecha inicial");//0
         modeloDatosPrueba.addColumn("Fecha final");//1
-        modeloDatosPrueba.addColumn("Fecha de aborto");//2
         modeloDatosPrueba.addColumn("Nombre inspector");//3
         modeloDatosPrueba.addColumn("Tipo documento inspector");//4
         modeloDatosPrueba.addColumn("No. documento inspector");//5
         modeloDatosPrueba.addColumn("Lugar de medicion");//6
         modeloDatosPrueba.addColumn("Temperatura ambiente");//7
-        modeloDatosPrueba.addColumn("Humedad relativa");//8
-        modeloDatosPrueba.addColumn("Causal Aborto");//9
+        modeloDatosPrueba.addColumn("Humedad relativa");//
 
 
         modeloResultadoPrueba = new DefaultTableModel();
@@ -139,8 +140,29 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         modeloResultadoPrueba.addColumn("R_CO2_CRU");//19
         modeloResultadoPrueba.addColumn("R_O2_RAL");//20
         modeloResultadoPrueba.addColumn("R_O2_CRU");//21
-        modeloResultadoPrueba.addColumn("NC_EMISIONES");//22
-        modeloResultadoPrueba.addColumn("RES_FINAL");//23
+        modeloResultadoPrueba.addColumn("NC_EMISIONES_OTTO");//22
+        modeloResultadoPrueba.addColumn("RES_FINAL_OTTO");//23
+
+        modeloResultadoDiesel = new DefaultTableModel();
+        modeloResultadoDiesel.addColumn("Ciclo preliminar %");//0--
+        modeloResultadoDiesel.addColumn("Rpm Gobernada Preliminar");//1
+        modeloResultadoDiesel.addColumn("Rpm Ralenti preliminar");//2
+        modeloResultadoDiesel.addColumn("Ciclo 1 %");//3 ---
+        modeloResultadoDiesel.addColumn("Rpm gobernada ciclo 1");//4
+        modeloResultadoDiesel.addColumn("Rpm Ralenti ciclo 1");//5 ---
+        modeloResultadoDiesel.addColumn("Ciclo 2 %");//6 ----
+        modeloResultadoDiesel.addColumn("RPM gobernada ciclo 2");//7 ---
+        modeloResultadoDiesel.addColumn("RPM Ralenti ciclo 2");//8 --
+        modeloResultadoDiesel.addColumn("Ciclo 3 %");//9 ---
+        modeloResultadoDiesel.addColumn("RPM Gobernada ciclo 3");//12
+        modeloResultadoDiesel.addColumn("Rpm ralenti ciclo 3");//14
+        modeloResultadoDiesel.addColumn("Resultado final %");//15
+        modeloResultadoDiesel.addColumn("ciclo preliminar m-1");//16
+        modeloResultadoDiesel.addColumn("ciclo 1 m-1");//17
+        modeloResultadoDiesel.addColumn("ciclo 2 m-1");//18
+        modeloResultadoDiesel.addColumn("ciclo 3 m-1");//19
+        modeloResultadoDiesel.addColumn("Resultado final m-1");//20
+        modeloResultadoDiesel.addColumn("RES_FINAL_DIESEL");//23
 
     }
 
@@ -155,6 +177,7 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         List<EquiposSoftOttoNtc> datosSoftwareEquipo = todosLosDatos.getEquiposOtto(); 
         List<DatosGeneralesNtc> datosInspeccion = todosLosDatos.getGeneralesPrueba(); 
         List<ResultadosOttoNtc> datosResulInspeccion  = todosLosDatos.getResultadosOtto(); 
+        List<ResultadosDieselNtc> datosResutDiesel = todosLosDatos.getResultadosDiesel();
 
         datosCda.stream().forEach(datoCda -> {
             Object[] fila = {
@@ -167,8 +190,9 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
                 datoCda.getCelular(),
                 datoCda.getCiudad(),
                 datoCda.getNoResolucionAuthAmbiental(),
-                datoCda.getFechaResolucionAuthAmbiental()
-
+                datoCda.getFechaResolucionAuthAmbiental(),
+                datoCda.getClaseCda(),
+                datoCda.getNormaAplicada()
             };
             modeloCDA.addRow(fila);
         });
@@ -208,9 +232,9 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
                 datoVehiculo.getLicTrans(),
                 datoVehiculo.getCilindraje(),
                 datoVehiculo.getKm(),
-                datoVehiculo.getDisMotor(),
+                !datoVehiculo.getTipComb().equals("DIESEL") ?datoVehiculo.getDiseno() : "None",
                 datoVehiculo.getTipComb(),
-                datoVehiculo.getTipMotor()
+                !datoVehiculo.getTipComb().equals("DIESEL") ? (datoVehiculo.getDiseno().equals("None") ? "Otto" : datoVehiculo.getTipMotor()) : ""
             };
             modeloInfoVehiculo.addRow(fila);
         });
@@ -230,66 +254,66 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
             Object[] fila = {
                 datoInspeccion.getFIniInsp(),
                 datoInspeccion.getFFinInsp(),
-                datoInspeccion.getFAborto(),
                 datoInspeccion.getNomIt(),
                 datoInspeccion.getTipIdeIt(),
                 datoInspeccion.getNumIdeIt(),
                 datoInspeccion.getLugarTemp(),
-                datoInspeccion.getTAmb(),
-                datoInspeccion.getHRel(),
-                datoInspeccion.getCAborto()
+                datoInspeccion.getTAmb().replace(",0", ""),
+                datoInspeccion.getHRel().replace(",0", "")
             };
             modeloDatosPrueba.addRow(fila);
         });
-
-        modeloResultadoPrueba = new DefaultTableModel();
-        modeloResultadoPrueba.addColumn("Temperatura motor");//0--
-        modeloResultadoPrueba.addColumn("RPM_RAL");//1
-        modeloResultadoPrueba.addColumn("RPM_CRU");//2
-        modeloResultadoPrueba.addColumn("Presencia humo");//3 ---
-        modeloResultadoPrueba.addColumn("Dilucion");//4
-        modeloResultadoPrueba.addColumn("Rpm fuera rango");//5 ---
-        modeloResultadoPrueba.addColumn("Fugas tubo escape");//6 ----
-        modeloResultadoPrueba.addColumn("Salidas adicionales");//7 ---
-        modeloResultadoPrueba.addColumn("Sin tapa o fuga aceite");//8 --
-        modeloResultadoPrueba.addColumn("Sin tapa o fuga combustible");//9 ---
-        modeloResultadoPrueba.addColumn("Accesorios tubos");//12
-        modeloResultadoPrueba.addColumn("R_HC_RAL");//14
-        modeloResultadoPrueba.addColumn("R_HC_CRU");//15
-        modeloResultadoPrueba.addColumn("R_CO_RAL");//16
-        modeloResultadoPrueba.addColumn("R_CO_CRU");//17
-        modeloResultadoPrueba.addColumn("R_CO2_RAL");//18
-        modeloResultadoPrueba.addColumn("R_CO2_CRU");//19
-        modeloResultadoPrueba.addColumn("R_O2_RAL");//20
-        modeloResultadoPrueba.addColumn("R_O2_CRU");//21
-        modeloResultadoPrueba.addColumn("NC_EMISIONES");//22
-        modeloResultadoPrueba.addColumn("RES_FINAL");//23
 
         datosResulInspeccion.stream().forEach(resultado -> {
             Object[] fila = {
                 resultado.getTMotor(),
                 resultado.getRpmRal(),
                 resultado.getRpmCru(),
-                resultado.getHumo(),
-                resultado.getDilucion(),
-                resultado.getRpmFuera(),
-                resultado.getFugaTubo(),
-                resultado.getSalidasAd(),
-                resultado.getFugaAceite(),
-                resultado.getFugaComb(),
-                resultado.getAccTubo(),
-                resultado.getRHcRal(),
-                resultado.getRHcCru(),
-                resultado.getRCoRal(),
-                resultado.getRCoCru(),
-                resultado.getRCo2Ral(),
-                resultado.getRCo2Cru(),
-                resultado.getRO2Ral(),
-                resultado.getRO2Cru(),
-                resultado.getNcEmisiones(),
-                resultado.getResFinal()
+                resultado.getRpmRal() == null ? "": resultado.getHumo(),
+                resultado.getRpmRal() == null ? "": resultado.getDilucion(),
+                resultado.getRpmRal() == null ? "": resultado.getRpmFuera(),
+                resultado.getRpmRal() == null ? "": resultado.getFugaTubo(),
+                resultado.getRpmRal() == null ? "": resultado.getSalidasAd(),
+                resultado.getRpmRal() == null ? "": resultado.getFugaAceite(),
+                resultado.getRpmRal() == null ? "": resultado.getFugaComb(),
+                resultado.getRpmRal() == null ? "": resultado.getAccTubo(),
+                resultado.getRHcRal().replace(",0", ""),
+                resultado.getRHcCru().replace(",0", ""),
+                resultado.getRCoRal().replace(",0", ""),
+                resultado.getRCoCru().replace(",0", ""),
+                resultado.getRCo2Ral().replace(",0", ""),
+                resultado.getRCo2Cru().replace(",0", ""),
+                resultado.getRO2Ral().replace(",0", ""),
+                resultado.getRO2Cru().replace(",0", ""),
+                resultado.getRpmRal() == null ? "": resultado.getNcEmisiones(),
+                resultado.getRpmRal() == null ? "": resultado.getResFinal()
             };
             modeloResultadoPrueba.addRow(fila);
+        });
+
+        datosResutDiesel.stream().forEach(resultado -> {
+            Object[] fila = {
+                resultado.getROpPre().equals("0.00") ? "" : resultado.getROpPre().replace(",0", ""),
+                resultado.getRpmGobPre(),
+                resultado.getRpmRalPre(),
+                resultado.getROpC1().equals("0.00") ? "" : resultado.getROpC1().replace(",0", ""),
+                resultado.getRpmGobC1(),
+                resultado.getRpmRalC1(),
+                resultado.getROpC2().equals("0.00") ? "" : resultado.getROpC2().replace(",0", ""),
+                resultado.getRpmGobC2(),
+                resultado.getRpmRalC2(),
+                resultado.getROpC3().equals("0.00") ? "" : resultado.getROpC3().replace(",0", ""),
+                resultado.getRpmGobC3(),
+                resultado.getRpmRalC3(),
+                resultado.getRFinalOp().equals("0.00") ? "" : resultado.getRFinalOp().replace(",0", ""),
+                resultado.getRDenPre(),
+                resultado.getRDenC1(),
+                resultado.getRDenC2(),
+                resultado.getRDenC3(),
+                resultado.getRFinalDen(),
+                resultado.getRFinalOp().equals("0.00") ? "" : resultado.getResFinal()
+            };
+            modeloResultadoDiesel.addRow(fila);
         });
         
 
@@ -301,6 +325,7 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         this.tblModeloPropietario.setModel(modeloPropietario);
         this.tblDatosPrueba.setModel(modeloDatosPrueba);
         this.tblResultadosPrueba.setModel(modeloResultadoPrueba);
+        this.tblResultadosDiesel.setModel(modeloResultadoDiesel);
 
         tblCda.setEnabled(false);
         tblInfoVehiculos.setEnabled(false);
@@ -309,6 +334,7 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         tblModeloPropietario.setEnabled(false);
         tblDatosPrueba.setEnabled(false);
         tblResultadosPrueba.setEnabled(false);
+        tblResultadosDiesel.setEnabled(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -332,12 +358,14 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         jScrollPane13 = new javax.swing.JScrollPane();
         jScrollPane14 = new javax.swing.JScrollPane();
         jScrollPane15 = new javax.swing.JScrollPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
         tblMedidas = new javax.swing.JTable();
         tblCda = new javax.swing.JTable();
         tblEquipoMedicion = new javax.swing.JTable();
         tblModeloPropietario = new javax.swing.JTable();
         tblDatosPrueba = new javax.swing.JTable();
         tblResultadosPrueba = new javax.swing.JTable();
+        tblResultadosDiesel = new javax.swing.JTable();
 
         setPreferredSize(new java.awt.Dimension(1024, 768));
 
@@ -372,9 +400,9 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         infPrueba.addTab("Inf. Cda", jScrollPane11);
 
         tblEquipoMedicion.setModel(modeloEquipoMedicion);
-        tblEquipoMedicion.setName("Dtos del Propietario."); // NOI18N
+        tblEquipoMedicion.setName("Dtos Equipo medicion"); // NOI18N
         jScrollPane12.setViewportView(tblEquipoMedicion);
-        infPrueba.addTab("Inf. Prop", jScrollPane12);
+        infPrueba.addTab("Inf. medicion", jScrollPane12);
 
         //Tabla de Modelo d einformacion Vehiculo		
         tblInfoVehiculos.setModel(modeloInfoVehiculo);
@@ -382,36 +410,31 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         jScrollPane1.setViewportView(tblInfoVehiculos);
         infPrueba.addTab("Inf. Vehiculo", jScrollPane1);
 
-        //Tabla d eModelo Medidas
-//        tblMedidas.setModel(modeloMedidas);
-//        tblMedidas.setName("Información del Medidas"); // NOI18N		
-//        jScrollPane10.setViewportView(tblMedidas);
-//        infPrueba.addTab("Inf. Medidas", jScrollPane10);
-        //Tabla de Equipos
         tblModeloPropietario.setModel(modeloPropietario);
-        tblModeloPropietario.setName("Información de Equipos y Software"); // NOI18N		
+        tblModeloPropietario.setName("Dtos. propietario"); // NOI18N		
         jScrollPane13.setViewportView(tblModeloPropietario);
-        infPrueba.addTab("Inf. Equipos/Software", jScrollPane13);
+        infPrueba.addTab("Inf. Propietario", jScrollPane13);
 
         //Tabla datos generales inspeccion
         tblDatosPrueba.setModel(modeloDatosPrueba);
-        tblDatosPrueba.setName("Datos Generales Inspeccion"); // NOI18N		
+        tblDatosPrueba.setName("Datos Prueba"); // NOI18N		
         jScrollPane14.setViewportView(tblDatosPrueba);
-        infPrueba.addTab("Inf. Datos generales inspeccion", jScrollPane14);
+        infPrueba.addTab("Inf. Datos prueba", jScrollPane14);
 
         //Tabla 
         tblResultadosPrueba.setModel(modeloResultadoPrueba);
-        tblResultadosPrueba.setName("Datos resolucion realizada"); // NOI18N		
+        tblResultadosPrueba.setName("Datos resultados otto"); // NOI18N		
         jScrollPane15.setViewportView(tblResultadosPrueba);
-        infPrueba.addTab("Inf. Datos inspeccion realizada", jScrollPane15);
+        infPrueba.addTab("Inf. Datos resultados otto", jScrollPane15);
 
-        /*
-        tblCalibracion.setModel(modelEquipo);
-	tblCalibracion.setName("Información de Calibracion"); // NOI18N		
-	jScrollPane12.setViewportView(tblCalibracion);
-	infPrueba.addTab("Inf. Calibracion", jScrollPane12);
+        
+        tblResultadosDiesel.setModel(
+            modeloResultadoDiesel);
+        tblResultadosDiesel.setName("Datos diesel"); // NOI18N		
+        jScrollPane2.setViewportView(tblResultadosDiesel);
+        infPrueba.addTab("Inf. datos resultados diesel", jScrollPane2);
 
-         */
+        
  /*
 *
 *   Agregar los componetes de  NOmbres fechas y btn de generar al layout sea visible    
@@ -502,6 +525,7 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
         tables.add(tblModeloPropietario);
         tables.add(tblDatosPrueba);
         tables.add(tblResultadosPrueba);
+        tables.add(tblResultadosDiesel);
         GenericExportExcel excel = new GenericExportExcel();
         excel.exportSameSheet(tables);
     }
@@ -524,13 +548,15 @@ public class ReporteBucaramanga extends javax.swing.JInternalFrame {
     private javax.swing.JScrollPane jScrollPane13;
     private javax.swing.JScrollPane jScrollPane14;
     private javax.swing.JScrollPane jScrollPane15;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable tblCda;
     private javax.swing.JTable tblEquipoMedicion;
     private javax.swing.JTable tblMedidas;
     private javax.swing.JTable tblInfoVehiculos;
     private javax.swing.JTable tblModeloPropietario;
-    private javax.swing.JTable tblDatosPrueba;
     private javax.swing.JTable tblResultadosPrueba;
+    private javax.swing.JTable tblResultadosDiesel;
+    private javax.swing.JTable tblDatosPrueba;
 
 
 

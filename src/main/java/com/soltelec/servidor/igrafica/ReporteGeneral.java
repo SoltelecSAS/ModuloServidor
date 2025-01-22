@@ -790,7 +790,11 @@ public final class ReporteGeneral extends javax.swing.JInternalFrame {
         }
 
         for (HojaPruebas hp : listaHPPFV) {
-            int numeroTipoGasolina;
+            int numeroTipoGasolina = 0;
+            
+            if(hp == null || hp.getVehiculos() == null || hp.getVehiculos().getTiposGasolina() == null || hp.getVehiculos().getTiposGasolina().getFueltype() == 1) 
+                continue;
+
             numeroTipoGasolina = hp.getVehiculos().getTiposGasolina().getFueltype();
             Vehiculos vehiculo = hp.getVehiculos();
             datos[0] = vehiculo.getMarcas().getNombremarca();//Marca del vehiculo

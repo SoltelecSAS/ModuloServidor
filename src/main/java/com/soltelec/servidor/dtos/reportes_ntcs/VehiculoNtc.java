@@ -29,5 +29,6 @@ public class VehiculoNtc {
     gobMinFab,
     gobMaxFab,
     disMotor,
-    numEscape;
+    numEscape,
+    diseno;
 }

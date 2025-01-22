@@ -812,6 +812,8 @@ public class Reportes {
 
                         equipoAnalizador.add(equipo);
                     }else if (rc.getString("serial_nuevo") != null){
+                        String serialNew = rc.getString("serial_nuevo");
+                        if(!serialNew.contains("~")) continue;
                         String[] serialesNuevos = rc.getString("serial_nuevo").split("~");
                         String serialesAnalizador= "";
                         System.out.println("Seriales nuevos: "+ rc.getString("serial_nuevo"));
@@ -1232,7 +1234,8 @@ public class Reportes {
                     gobMinFab = "",
                     gobMaxFab = "",
                     disMotor = rc.getString("DIS_MOTOR"),
-                    numEscape = rc.getString("NUM_ESCAPE");
+                    numEscape = rc.getString("NUM_ESCAPE"),
+                    diseno = rc.getString("diseno");
 
                     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
@@ -1247,7 +1250,7 @@ public class Reportes {
                     String serialEquipo = rc.getString("serialEquipo");
                     System.out.println("SerialEqipo = "+serialEquipo);
 
-                    if (!serialEquipo.contains("~")) continue;
+                    if (serialEquipo == null || serialEquipo.equals("otto~;;~-;//;~;;") || !serialEquipo.contains("~")) continue;
 
                     String marcas = serialEquipo.split("~")[1];
                     String seriales = serialEquipo.split("~")[2];
@@ -1264,18 +1267,18 @@ public class Reportes {
                     BigDecimal valorPefBigDecimal= BigDecimal.valueOf(Double.parseDouble(valorPef));
 
                     
-
+                    String[] partesSeriales= serialEquipo.split("~");
                     //Datos del equipo otto utilizados para inspeccion
                     String
                     marcaAg = marcas.split(";")[0],
-                    modAg = serialEquipo.split("~").length > 3 ? serialEquipo.split("~")[3].split(";")[0] : "",
+                    modAg = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length > 0 ? partesSeriales[3].split(";")[0] : "") : "",
                     serialAg = serialesAnalizador.split("-")[1],
                     marcaBg = marcas.split(";")[0],
-                    modBg = serialEquipo.split("~").length > 3 ? serialEquipo.split("~")[3].split(";")[1] : "",
+                    modBg = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length > 1 ? partesSeriales[3].split(";")[1] : "") : "",
                     serialBg = serialesAnalizador.split("-").length < 3 ? serialesAnalizador.split("-")[1] : serialesAnalizador.split("-")[2],
                     pef = valorPef,
-                    serialE = serialEquipo.split("~").length > 3 ? (serialEquipo.split("~")[3].split(";").length < 3 ? "" : serialEquipo.split("~")[3].split(";")[2]) : "",
-                    serialEOpa = serialEquipo.split("~").length > 3 ?(serialEquipo.split("~")[3].split(";").length < 2 ? "" : serialEquipo.split("~")[3].split(";")[1]) : "",
+                    serialE = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length < 3 ? "" : partesSeriales[3].split(";")[2]) : "",
+                    serialEOpa = partesSeriales.length > 3 ?(partesSeriales[3].split(";").length < 2 ? "" : partesSeriales[3].split(";")[1]) : "",
                     marcaRpm = marcas.split(";")[1],
                     serialRpm = serialesKitRpm.split("/")[0],
                     marcaTempA = marcas.split(";")[2],
@@ -1361,10 +1364,14 @@ public class Reportes {
                     tAmb = redondeoSegunNorma(rc.getBigDecimal("temperatura_ambiente")),
                     hRel = redondeoSegunNorma(rc.getBigDecimal("humedad_relativa"));
 
-                    if(rc.getString("LUGAR_TEMP").equals("B")) lugarTemp = "Bloque";
-                    if(rc.getString("LUGAR_TEMP").equals("I")) lugarTemp = "Aceite";
-                    if(rc.getString("LUGAR_TEMP").equals("C")) lugarTemp = "Método de tiempo";
+                    if ("".equals(tAmb)) continue;
+                    
 
+                    if(rc.getString("LUGAR_TEMP").equals("B")) lugarTemp = "Bloque";
+                    else if(rc.getString("diseno").equalsIgnoreCase("Scooter")) lugarTemp = "";
+                    else if(rc.getString("LUGAR_TEMP").equals("I")) lugarTemp = "Aceite";
+                    else if(rc.getString("LUGAR_TEMP").equals("C")) lugarTemp = "Método de tiempo";
+                    else if(rc.getInt("temperatura_motor") !=0) lugarTemp = "Aceite";
                     //Resultados otto
                     String 
                     tMotor = (
@@ -1483,7 +1490,7 @@ public class Reportes {
                         new VehiculoNtc(
                             placa, modelo, numMotor, vin, modMotor, diaEscape, cilindraje, licTrans, 
                             km, gnvConv, gnvConvV, marca, linea, clase, servicio, tipComb, tipMotor, 
-                            rpmFab, ralMinFab, ralMaxFab, gobMinFab, gobMaxFab, disMotor, numEscape));
+                            rpmFab, ralMinFab, ralMaxFab, gobMinFab, gobMaxFab, disMotor, numEscape, diseno));
 
                     listaEquiposOtto.add(
                         new EquiposSoftOttoNtc(

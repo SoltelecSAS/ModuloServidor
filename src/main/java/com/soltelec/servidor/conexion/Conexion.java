@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
 import com.soltelec.servidor.utils.CMensajes;
 import com.soltelec.servidor.utils.CifraDesifra;
 import com.soltelec.servidor.utils.UtilPropiedades;
@@ -30,6 +32,11 @@ public class Conexion implements Serializable {
     protected static String puerto;
     protected static String contrasena;
     private static Conexion instance;
+
+    private static String nitCda;
+    public static String getNitCda(){
+        return nitCda;
+    }
 
     private static final String USER_AGENT = "Mozilla/5.0";
 
@@ -101,6 +108,7 @@ public class Conexion implements Serializable {
                             String urlPeticion = "http://api.soltelec.com:8087/api/public/"+nit;
                             response = sendGet(urlPeticion);
 
+                            nitCda = nit;
                             if (response.equalsIgnoreCase("true")) licencia = true;
                         }
                     }
@@ -179,6 +187,70 @@ public class Conexion implements Serializable {
         } catch (java.net.SocketTimeoutException e) {
             return "Socket Timeout Exception: " + e.getMessage();
         } catch (Exception e) {
+            return "Exception: " + e.getMessage();
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
+        }
+    }
+
+    public static String sendPost(String url, Object data) {
+        HttpURLConnection con = null;
+        try {
+            // Crear conexión
+            URL obj = new URL(url);
+            con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("POST");
+            con.setRequestProperty("User-Agent", USER_AGENT);
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+
+            // Convertir el objeto a JSON
+            Gson gson = new Gson();
+            String jsonInputString = gson.toJson(data);
+
+            // Habilitar envío de datos
+            con.setDoOutput(true);
+
+            // Escribir datos en la solicitud
+            try (OutputStream os = con.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            // Obtener respuesta del servidor
+            int responseCode = con.getResponseCode();
+            System.out.println("POST Response Code :: " + responseCode);
+
+            if (responseCode == HttpURLConnection.HTTP_OK) { // Código 200 OK
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                return response.toString();
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) { // Código 404
+                return "404 Not Found";
+            } else if (responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR) { // Código 500
+                return "El CDA no se encuentra inscrito en la base de datos del VPS";
+            } else {
+                return "Unexpected Response Code: " + responseCode;
+            }
+        } catch (java.net.UnknownHostException e) {
+            e.printStackTrace();
+            return "Unknown Host Exception: " + e.getMessage();
+        } catch (java.net.ConnectException e) {
+            e.printStackTrace();
+            return "false";
+        } catch (java.net.SocketTimeoutException e) {
+            e.printStackTrace();
+            return "Socket Timeout Exception: " + e.getMessage();
+        } catch (Exception e) {
+            e.printStackTrace();
             return "Exception: " + e.getMessage();
         } finally {
             if (con != null) {

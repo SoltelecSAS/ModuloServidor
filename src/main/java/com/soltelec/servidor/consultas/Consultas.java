@@ -199,8 +199,8 @@ public class Consultas {
         "    hp.TESTSHEET,\n" + //
         "    p.Id_Pruebas,\n" + //
         "    \n" + //
-        "    MAX(CASE WHEN e.pef THEN p.Fecha_prueba END) AS Fecha_prueba,\n" + //
-        "    MAX(CASE WHEN e.pef THEN p.Fecha_final END) AS Fecha_final,\n" + //
+        "    p.Fecha_prueba AS Fecha_prueba,\n" + //
+        "    p.Fecha_final AS Fecha_final,\n" + //
         "    hp.con_hoja_prueba AS n_fur,\n" + //
         "    (SELECT CONSECUTIVE FROM certificados WHERE TESTSHEET = hp.TESTSHEET LIMIT 1) AS n_certificado,\n" + //
         "    MAX(CASE WHEN e.pef THEN e.marca END) AS marca_equipo,\n" + //
@@ -220,6 +220,7 @@ public class Consultas {
         "    v.Numero_exostos,\n" + //
         "    v.diseño,\n" + //
         "    null AS temperatura_final,\n" + //
+        "    \n" + //
         "    \n" + //
         "    MAX(CASE WHEN m1.MEASURETYPE = 8031 THEN m1.Valor_medida END) AS temperatura_ambiente,\n" + //
         "    MAX(CASE WHEN m1.MEASURETYPE = 8032 THEN m1.Valor_medida END) AS humedad_relativa,\n" + //
@@ -365,18 +366,24 @@ public class Consultas {
         "     ELSE 0 END) AS desviacion_cero,\n" + //
         "     \n" + //
         "     MAX(CASE WHEN e.pef THEN e.pef END) AS pef,\n" + //
-        "     MAX(CASE WHEN e.pef THEN e.serialresolucion END) AS serialEquipo,\n" + //
+        "     \n" + //
+        "     (SELECT pr.serialEquipo\n" + //
+        "\t\t FROM pruebas pr\n" + //
+        "\t\t WHERE pr.Tipo_prueba_for = 8 and pr.hoja_pruebas_for = hp.TESTSHEET\n" + //
+        "\t\t LIMIT 1) AS serialEquipo,\n" + //
+        "\n" + //
+        "     \n" + //
         "     MAX(CASE WHEN e.pef THEN e.marca END) AS marca_equipo,\n" + //
         "     MAX(CASE WHEN m1.MEASURETYPE = 7003 \n" + //
         "            OR m1.MEASURETYPE = 7004 \n" + //
         "                OR m1.MEASURETYPE = 7005 THEN m1.Valor_medida END) AS ruido\n" + //
         "FROM \n" + //
         "    hoja_pruebas hp\n" + //
-        "    LEFT JOIN pruebas AS p ON p.hoja_pruebas_for = hp.TESTSHEET\n" + //
+        "    INNER JOIN pruebas AS p ON p.hoja_pruebas_for = hp.TESTSHEET\n" + //
         "    LEFT JOIN usuarios AS u ON u.GEUSER = p.Usuario_for\n" + //
         "    INNER JOIN vehiculos AS v ON hp.Vehiculo_for = v.CAR\n" + //
         "    INNER JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
-        "    INNER JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
+        "    LEFT JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
         "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
         "    INNER JOIN lineas_vehiculos l ON l.CARLINE = v.CARLINE\n" + //
         "    INNER JOIN clases_vehiculo cl ON cl.CLASS = v.CLASS\n" + //
@@ -390,9 +397,9 @@ public class Consultas {
         "    AND hp.Finalizada = 'Y' \n" + //
         "    AND hp.estado_sicov = 'SINCRONIZADO'\n" + //
         "GROUP BY \n" + //
-        "    hp.TESTSHEET, DATE(hp.Fecha_ingreso_vehiculo)\n" + //
+        "    hp.TESTSHEET\n" + //
         "ORDER BY \n" + //
-        "    p.Fecha_prueba";
+        "    p.Fecha_prueba;";
     }
 
     public static String getNtc5365(){

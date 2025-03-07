@@ -428,6 +428,9 @@ public class Reportes {
         List<RuidoCorpocaldas> listaRuido = new ArrayList<>();
 
         String sql= Consultas.getCorpocaldas();
+
+        System.out.println("Consulta corpocaldas: \n"+ sql);
+
         String sqlCda = Consultas.getDatosCda();
         String sqlSoftware = Consultas.getSoftware();
         String sqlEquipo = Consultas.getEquipoCorantioquiaYCorpocaldas();
@@ -464,7 +467,7 @@ public class Reportes {
                 while (rc.next()) {
                     //Colocara datos segun cada fila que encuentre
 
-                    if(rc.getString("Fecha_prueba")==null) continue;
+                    if(rc.getString("Fecha_prueba")==null || rc.getString("serialEquipo").equalsIgnoreCase("Serial no encontrado")) continue;
 
                     //Añade los datos del cda
                     listaDatosCda.add(datosDelCda);
@@ -957,6 +960,14 @@ public class Reportes {
                         diesel.setGobernadaC2(redondeoSegunNorma(rc.getBigDecimal("rpm_gobernada_c2")));
                         diesel.setDencidadC3(redondeoSegunNorma(rc.getBigDecimal("opacidad_c3")));
                         diesel.setGobernadaC3(redondeoSegunNorma(rc.getBigDecimal("rpm_gobernada_c3")));
+
+                        if(
+                            rc.getBigDecimal("rpm_gobernada_c1") == null || 
+                            rc.getBigDecimal("rpm_gobernada_c2") == null || 
+                            rc.getBigDecimal("rpm_gobernada_c3") == null 
+                        ){
+                            continue;
+                        }
 
                         BigDecimal sumRpm = rc.getBigDecimal("rpm_gobernada_pre")
                         .add(rc.getBigDecimal("rpm_gobernada_c1"))
@@ -1846,8 +1857,13 @@ public class Reportes {
         fechaFinPrueba = fechaFinPrueba.replace('-', '/');
         String fur = rc.getString("n_fur");
         String nCertificado = rc.getString("n_certificado");
-        String nSerieEquipo = rc.getString("serialEquipo");
-        String marcaMedidor = rc.getString("marca_equipo");
+
+        boolean nuevosSeriales = rc.getString("serialEquipo").startsWith("otto");
+
+
+        String nSerieEquipo = nuevosSeriales ? rc.getString("serialEquipo").split("~")[2].split("-")[1] : rc.getString("serialEquipo");
+        String marcaMedidor = nuevosSeriales ? rc.getString("serialEquipo").split("~")[1].split(";")[0] : rc.getString("marca_equipo");
+
         String nombreProveedor = "Soltelec";
         String idInspector = rc.getString("id_inspector");
 
@@ -2045,11 +2061,13 @@ public class Reportes {
 
     private static AnalizadorCorpocaldas getAnalizadorCorpocaldas(ResultSet rc, PreparedStatement consultaEquipo)throws SQLException{
         //Formato de fechas
+
+        boolean nuevosSeriales = rc.getString("serialEquipo").startsWith("otto");
         Date fechaPrueba = rc.getDate("Fecha_prueba");
         
-        String pef = "0."+ rc.getString("pef") ;
+        String pef = nuevosSeriales ? rc.getString("serialEquipo").split("~")[2].split("-")[0] : "0."+ rc.getString("pef") ;
         String marcaAnalizador  = rc.getString("marca");
-        String serie = rc.getString("serialEquipo") != null ? rc.getString("serialEquipo") : "NA;NA";
+        String serie = nuevosSeriales ? rc.getString("serialEquipo").split("~")[2].split("-")[1] : rc.getString("serialEquipo");
 
         String spanHcBaja = "",
         spanCoBaja = "",
@@ -2065,10 +2083,12 @@ public class Reportes {
         valorLeidoCo2Alta = "",
         fechaVerificacion = "";
 
-        String[] partesSerial = serie.split(";");
+        
+
+        String partesSerial = nuevosSeriales ? rc.getString("serialEquipo").split("~")[2].split("-")[1] : serie.split(";")[0];
 
         consultaEquipo.setDate(1, new java.sql.Date(fechaPrueba.getTime()));
-        consultaEquipo.setString(2, ("%"+partesSerial[0]+"%"));
+        consultaEquipo.setString(2, ("%"+partesSerial+"%"));
 
         try(ResultSet resultadoEquipo = consultaEquipo.executeQuery()){
             while (resultadoEquipo.next()) {

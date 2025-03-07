@@ -611,6 +611,7 @@ public class ReporteCorpocaldas extends javax.swing.JInternalFrame {
                 new Runnable() {
             @Override
             public void run() {
+                System.out.println("Entrando a filldata");
                 fillData(fechaInicial.getDate(), fechaFInal.getDate());
             }
         });

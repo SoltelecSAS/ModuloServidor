@@ -3,6 +3,7 @@ package com.soltelec.servidor.utils;
 
 import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.consultas.DatabaseBackup;
+import com.soltelec.servidor.dtos.superuser.SuperUser;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,6 +34,22 @@ public class BackupDatabase {
     }
 
     public static void Backupdbtosql(JLabel loading) throws InterruptedException {
+
+        // Crear los campos de entrada con valores predeterminados
+        JTextField usuarioField = new JTextField(Conexion.getUsuario());
+        JPasswordField contrasenaField = new JPasswordField(Conexion.getContrasena());
+        JTextField puertoField = new JTextField(Conexion.getPuerto());
+        JTextField baseDatosField = new JTextField(Conexion.getBaseDatos());
+        JTextField ipField = new JTextField(Conexion.getIpServidor());
+
+
+        int dbCredentials = panelCredenciales(usuarioField, contrasenaField, puertoField, baseDatosField, ipField);
+
+        if (dbCredentials != JOptionPane.OK_OPTION) {
+            CMensajes.mensajeCorrecto("Operacion cancelada");
+            throw new RuntimeException("Operacion cancelada");
+        }
+
         // Crear un diálogo de progreso indeterminado
         JOptionPane pane = new JOptionPane("Creando...", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
         JDialog dialog = pane.createDialog("Mensaje");
@@ -46,7 +63,7 @@ public class BackupDatabase {
             // Verifica si el hilo aún no se ha ejecutado
             if (!backupExecuted.getAndSet(true)) {
                 // Ejecuta la creación del respaldo en el hilo actual
-                int result = DatabaseBackup.createBackup();
+                int result = DatabaseBackup.createBackups(usuarioField.getText(), new String(contrasenaField.getPassword()), puertoField.getText(), baseDatosField.getText(), ipField.getText());
 
                 // Cierra el diálogo de progreso en el hilo actual
                 dialog.dispose();
@@ -145,86 +162,105 @@ public class BackupDatabase {
         dialog.setVisible(true);
     }
 
-    /* public static void Backupdbtosql(JLabel loading) throws InterruptedException {
-        loading.setVisible(true);
-        try 
-        {
-            dbName = Conexion.getBaseDatos();
-            port = Conexion.getPuerto();
-            dbUser = Conexion.getUsuario();
-            dbPass = Conexion.getContrasena();
-            folderPath = "C:\\\\BACKUPS\\\\";
-    
-            String nombreArchivo = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-            File f1 = new File(folderPath);
-            if (!f1.exists()) {
-                f1.mkdir();
-            }
-            String savePath = folderPath + nombreArchivo + ".sql";
-            
-            // Obtener la IP del servidor desde Conexion.getIpServidor()
-            String host = Conexion.getIpServidor();
-    
-            // Crear archivo .cnf temporal para las credenciales
-            String mysqlCnfPath = System.getProperty("user.dir") + File.separator + "mysql.cnf";
-            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, dbPass);
-            
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(mysqlCnfPath))) {
-                writer.write(mysqlCnfContent);
-            }
-    
-            // Crear el comando mysqldump usando la IP del servidor
-            String mysqldumpCmd = String.format("mysqldump --defaults-extra-file=%s --host=%s --port=%s --single-transaction %s",
-                    mysqlCnfPath, host, port, dbName);
-            
-            System.out.println("Comando ejecutado: " + mysqldumpCmd);
-    
-            // Usar ProcessBuilder para ejecutar el comando y redirigir la salida al archivo
-            ProcessBuilder processBuilder = new ProcessBuilder(mysqldumpCmd.split(" "));
-            processBuilder.redirectOutput(new File(savePath));  // Redirigir la salida a un archivo
-            processBuilder.redirectErrorStream(true);  // Fusionar error y salida estándar
-    
-            // Ejecutar el proceso
-            Process process = processBuilder.start();
-            int processComplete = process.waitFor();
-    
-            if (processComplete == 0) {
-                JOptionPane.showMessageDialog(null, "BackUp finalizado correctamente");
-            } else {
-                JOptionPane.showMessageDialog(null, "Fallo el proceso. Código de salida: " + processComplete);
-            }
-    
-            // Eliminar el archivo mysql.cnf temporal
-            File mysqlCnfFile = new File(mysqlCnfPath);
-            if (mysqlCnfFile.exists()) {
-                boolean deleted = mysqlCnfFile.delete();
-                if (deleted) {
-                    LOG.info("Archivo mysql.cnf eliminado exitosamente");
-                } else {
-                    LOG.warning("No se pudo eliminar el archivo mysql.cnf");
-                }
-            }
-    
-            loading.setVisible(false);
-    
-        } catch (IOException ex) {
-            LOG.severe("Error de E/S: " + ex.getMessage());
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Fallo el proceso IOException: " + ex.getMessage());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            LOG.severe("Proceso interrumpido: " + ex.getMessage());
-        }
-    } */
-
     public static String[] pedirCredenciales(JLabel loading) {
         // Crear los campos de entrada con valores predeterminados
         JTextField usuarioField = new JTextField(Conexion.getUsuario());
         JPasswordField contrasenaField = new JPasswordField(Conexion.getContrasena());
         JTextField puertoField = new JTextField(Conexion.getPuerto());
         JTextField baseDatosField = new JTextField("db_cda");
+        JTextField ipField = new JTextField("127.0.0.1");
+
+        // Crea el panel de las credenciales
+        int dbCredentials = panelCredenciales(usuarioField, contrasenaField, puertoField, baseDatosField, ipField);
     
-        // Organizar los campos en un panel
+        //Pregunta si accedio con las credeciales digitadas
+        if (dbCredentials == JOptionPane.OK_OPTION) {
+            //Si las credenciales digitadas acceden a otro IP(Que puede ser el del servidor o un equipo desconocido)
+            //Entonces deben ingresarse unas credenciales adicionales que pertenecen al personal de soltelec
+            if (exiteRiesgoConLaImportacion(baseDatosField.getText(), ipField.getText())) {
+
+                //Aqui es donde pregunta las credenciales del personal de soltelec
+                boolean tienePermisos = credencialesPersonalSoltelec(ipField.getText());
+
+                //Si las credenciales del personal de soltelec son incorrectas no le dejara realizar la importacion
+                if(!tienePermisos){
+                    loading.setVisible(false);
+                    CMensajes.mensajeError("El credenciales del personal de soltelec incorrectos");
+                    throw new RuntimeException("El credenciales del personal de soltelec incorrectos");
+                } 
+            }
+
+            // Retornar los valores de las credenciales de la base de datos en un arreglo
+            return new String[] {
+                usuarioField.getText(),
+                new String(contrasenaField.getPassword()),
+                puertoField.getText(),
+                baseDatosField.getText(),
+                ipField.getText()
+            };
+        } 
+        //En este caso el usuario le dio cancelar a la importacion
+        else {
+            loading.setVisible(false);
+            // Lanzar excepción si el usuario cancela
+            CMensajes.mensajeCorrecto("Operacion cancelada");
+            throw new RuntimeException("El usuario cancelo la operacion");
+        }
+    }
+
+    private static boolean exiteRiesgoConLaImportacion(String nombreDb, String ipDb){
+        //Si el nombre de la base de datos es db_cda y no se importa al 127.0.0.1,
+        //existen riesgos en la importacion ya que esto puede involucrar a la base de datos del servidor
+        return nombreDb.equalsIgnoreCase("db_cda") && 
+        !ipDb.equalsIgnoreCase("127.0.0.1");
+    }
+
+    private static boolean credencialesPersonalSoltelec(String ipDb){
+        boolean confirmacion = CMensajes.mensajePregunta(
+            "Está a punto de importar el backup a una dirección IP distinta de 127.0.0.1 (localhost), con el nombre de 'db_cda'.\n"+
+            "Esto puede ser riesgoso por las siguientes razones:\n" +
+            "- Si la dirección IP corresponde a un servidor, podría sobreescribir la información existente.\n" +
+            "- La integración de los datos podría no ser segura, comprometiendo la protección de los datos del sistema del cda.\n\n" +
+            "¿Desea continuar, asumiendo los riesgos mencionados?");
+
+        if (confirmacion) {
+
+            JTextField usernameField = new JTextField(15);
+            JPasswordField passwordField = new JPasswordField(15);
+
+            JPanel panel2 = new JPanel(new GridLayout(2, 2));
+            panel2.add(new JLabel("Usuario:"));
+            panel2.add(usernameField);
+            panel2.add(new JLabel("Contraseña:"));
+            panel2.add(passwordField);
+
+            int personalSoltelecCredentials = JOptionPane.showConfirmDialog(null, panel2, "Credenciales Personal Soltelec", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            String username = "";
+            String password = "";
+
+            if (personalSoltelecCredentials == JOptionPane.OK_OPTION) {
+                username = usernameField.getText();
+                password = new String(passwordField.getPassword());
+
+                SuperUser superUser = new SuperUser();
+                superUser.setNickName(username);
+                superUser.setPassword(password);
+                superUser.setLog("importación y sobreescritura directa del backup a la base de datos con la ip de: "+ipDb);
+                superUser.setNitCda(Conexion.getNitCda());
+
+                String response = Conexion.sendPost("http://api.soltelec.com:8087/api/public/superUser", superUser);
+
+                System.out.println("Response: "+response);
+
+                return Boolean.valueOf(response);
+            }
+        }
+
+        return false;
+    }
+
+    public static int panelCredenciales(JTextField usuarioField, JPasswordField contrasenaField, JTextField puertoField, JTextField baseDatosField, JTextField ipField){
         JPanel panel = new JPanel(new GridLayout(0, 2));
         panel.add(new JLabel("Usuario:"));
         panel.add(usuarioField);
@@ -234,29 +270,20 @@ public class BackupDatabase {
         panel.add(puertoField);
         panel.add(new JLabel("Nombre DB:"));
         panel.add(baseDatosField);
+        panel.add(new JLabel("ip:"));
+        panel.add(ipField);
+        
     
         // Mostrar el cuadro de diálogo
-        int opcion = JOptionPane.showConfirmDialog(
+        int dbCredentials = JOptionPane.showConfirmDialog(
             null,
             panel,
-            "Ingrese las credenciales de la db local",
+            "Ingrese las credenciales de la base de datos",
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE
-        );
-    
-        if (opcion == JOptionPane.OK_OPTION) {
-            // Retornar los valores ingresados en un array de String
-            return new String[] {
-                usuarioField.getText(),
-                new String(contrasenaField.getPassword()),
-                puertoField.getText(),
-                baseDatosField.getText()
-            };
-        } else {
-            loading.setVisible(false);
-            // Lanzar excepción si el usuario cancela
-            throw new RuntimeException("El usuario no seleccionó las credenciales");
-        }
+        ); 
+
+        return dbCredentials;
     }
     
 

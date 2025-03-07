@@ -10,7 +10,10 @@
  */
 package com.soltelec.servidor.igrafica;
 
+import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.consultas.DatabaseBackup;
+import com.soltelec.servidor.utils.BackupDatabase;
+import com.soltelec.servidor.utils.CMensajes;
 import com.soltelec.servidor.utils.CargarArchivos;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
@@ -26,7 +29,9 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 /**
@@ -1764,6 +1769,23 @@ public class Principal extends javax.swing.JFrame {
     }
 
     private void backupDb() {
+
+        // Crear los campos de entrada con valores predeterminados
+        JTextField usuarioField = new JTextField(Conexion.getUsuario());
+        JPasswordField contrasenaField = new JPasswordField(Conexion.getContrasena());
+        JTextField puertoField = new JTextField(Conexion.getPuerto());
+        JTextField baseDatosField = new JTextField(Conexion.getBaseDatos());
+        JTextField ipField = new JTextField(Conexion.getIpServidor());
+
+
+        int dbCredentials = BackupDatabase.panelCredenciales(usuarioField, contrasenaField, puertoField, baseDatosField, ipField);
+
+        if (dbCredentials != JOptionPane.OK_OPTION) {
+            CMensajes.mensajeCorrecto("Operacion cancelada");
+            throw new RuntimeException("Operacion cancelada");
+        }
+
+
         // Crear un diálogo de progreso indeterminado
         JOptionPane pane = new JOptionPane("Creando...", JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
         JDialog dialog = pane.createDialog("Mensaje");
@@ -1777,7 +1799,7 @@ public class Principal extends javax.swing.JFrame {
             // Verifica si el hilo aún no se ha ejecutado
             if (!backupExecuted.getAndSet(true)) {
                 // Ejecuta la creación del respaldo en el hilo actual
-                int result = DatabaseBackup.createBackup();
+                int result = DatabaseBackup.createBackups(usuarioField.getText(), new String(contrasenaField.getPassword()), puertoField.getText(), baseDatosField.getText(), ipField.getText());
 
                 // Cierra el diálogo de progreso en el hilo actual
                 dialog.dispose();

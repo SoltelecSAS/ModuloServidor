@@ -1,5 +1,6 @@
 package com.soltelec.servidor.consultas;
 
+import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -7,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -17,17 +19,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.exceptions.BackupException;
+import com.soltelec.servidor.utils.CMensajes;
 
 public class DatabaseBackup {
 
@@ -37,13 +35,33 @@ public class DatabaseBackup {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseBackup.class);
 
-    private static String url = Conexion.getUrl();
+    /* private static String url = Conexion.getUrl();
     private static String dbUser = Conexion.getUsuario();
     private static String dbName = Conexion.getBaseDatos();
     private static String dbHost = Conexion.getIpServidor();
-    private static String dbPort = Conexion.getPuerto();
+    private static String dbPort = Conexion.getPuerto(); */
 
-    public static Integer createBackup() {
+    /* public static Integer createBackup() {
+        // Crear los campos de entrada con valores predeterminados
+        JTextField usuarioField = new JTextField(Conexion.getUsuario());
+        JPasswordField contrasenaField = new JPasswordField(Conexion.getContrasena());
+        JTextField puertoField = new JTextField(Conexion.getPuerto());
+        JTextField baseDatosField = new JTextField(Conexion.getBaseDatos());
+        JTextField ipField = new JTextField(Conexion.getIpServidor());
+
+
+        int dbCredentials = panelCredenciales(usuarioField, contrasenaField, puertoField, baseDatosField, ipField);
+
+        if (dbCredentials == JOptionPane.OK_OPTION) {
+            return createBackups(usuarioField.getText(), new String(contrasenaField.getPassword()), puertoField.getText(), baseDatosField.getText(), ipField.getText());
+        }else{
+            CMensajes.mensajeCorrecto("Operacion cancelada");
+            throw new RuntimeException("Operacion cancelada");
+        }
+    } */
+
+
+    public static Integer createBackups(String usuario, String contrasena, String puerto, String baseDatos, String ip) {
 
         // Obtener la fecha actual
         LocalDate fechaActual = LocalDate.now();
@@ -70,16 +88,17 @@ public class DatabaseBackup {
     
         // Crear el contenido del archivo de lote con las opciones necesarias
         String batchContent = String.format(
-            "mysqldump --defaults-extra-file=mysql.cnf --host=%s --port=%s %s > C:\\\\BACKUPS\\\\%s.sql",
-            dbHost, dbPort, dbName, fechaActualStr);
+            "mysqldump --defaults-extra-file=mysql.cnf --hex-blob --host=%s --port=%s %s > C:\\\\BACKUPS\\\\%s.sql",
+            ip, puerto, baseDatos, fechaActualStr);
     
         BufferedWriter writer = null;
         String mysqlCnfPath = null;
         try {
             // Crear el archivo de opciones de configuración
-            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", dbUser, "'" + Conexion.getContrasena() + "'");
+            String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=%s%n", usuario, "'" + contrasena + "'");
             mysqlCnfPath = currentDirectory + File.separator + "mysql.cnf";
             writer = new BufferedWriter(new FileWriter(mysqlCnfPath));
+            System.out.println("mysqlcontent: "+mysqlCnfContent);
             writer.write(mysqlCnfContent);
             writer.close();
     
@@ -99,7 +118,7 @@ public class DatabaseBackup {
                         System.out.println("OUTPUT mysqlDump: " + line); // Muestra la salida del proceso
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }).start();
     
@@ -108,9 +127,13 @@ public class DatabaseBackup {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         System.err.println("ERROR mysqlDump: " + line); // Muestra los errores del proceso
+                        if (!line.contains("Warning")) {
+                            CMensajes.mensajeError("ERROR mysqlDump: " + line);
+                        }
+                        
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }).start();
     
@@ -162,7 +185,7 @@ public class DatabaseBackup {
         return null;
     }
 
-    public static int importBackup(String backupFilePath, String dbName, String usuario, String dbPassword, String puerto) {
+    public static int importBackup(String backupFilePath, String dbName, String usuario, String dbPassword, String puerto, String ip) {
         Integer exitCode = null;
 
 
@@ -174,8 +197,8 @@ public class DatabaseBackup {
             String backupPath = "import.bat";
     
             // Crear el contenido del archivo de lote
-            String batchContent = String.format("mysql --defaults-extra-file=mysql.cnf --host=%s --port=%s %s < \"%s\"",
-                    "127.0.0.1", puerto, dbName, backupFilePath);
+            String batchContent = String.format("mysql --defaults-extra-file=mysql.cnf --host=%s --port=%s %s  < \"%s\"",
+                    ip, puerto, dbName, backupFilePath);
     
             // Crear el archivo de opciones de configuración
             String mysqlCnfContent = String.format("[client]%nuser=%s%npassword=\"%s\"%n", usuario, dbPassword);
@@ -239,6 +262,49 @@ public class DatabaseBackup {
         throw new BackupException("No se pudo hacer un backup");
     }
 
+    public static void eliminarNoAutoCreateUser(String ubicacion) {
+        File archivo = new File(ubicacion);
+    
+        if (!archivo.exists()) {
+            System.err.println("El archivo no existe: " + ubicacion);
+            return;
+        }
+    
+        File archivoTemporal = new File(archivo.getParent(), "temp_backup.sql");
+    
+        try (BufferedReader reader = new BufferedReader(new FileReader(archivo));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(archivoTemporal))) {
+    
+            String linea;
+    
+            while ((linea = reader.readLine()) != null) {
+                // Paso 1: Eliminar ",NO_AUTO_CREATE_USER"
+                String lineaModificada = linea.replaceAll(",NO_AUTO_CREATE_USER", "");
+
+                // Paso 2: Eliminar "NO_AUTO_CREATE_USER" restante
+                lineaModificada = lineaModificada.replaceAll("NO_AUTO_CREATE_USER,", "");
+    
+                // Paso 3: Eliminar "NO_AUTO_CREATE_USER" restante (sin coma)
+                lineaModificada = lineaModificada.replaceAll("NO_AUTO_CREATE_USER", "");
+    
+                writer.write(lineaModificada);
+                writer.newLine();
+            }
+    
+            System.out.println("El archivo ha sido procesado correctamente.");
+        } catch (IOException e) {
+            System.err.println("Ocurrió un error al procesar el archivo: " + e.getMessage());
+            return;
+        }
+    
+        // Reemplazar el archivo original con el archivo temporal
+        if (archivo.delete() && archivoTemporal.renameTo(archivo)) {
+            System.out.println("El archivo original se ha reemplazado correctamente.");
+        } else {
+            System.err.println("No se pudo reemplazar el archivo original.");
+        }
+    }
+
     public static Integer importBackup(String nameBackup, String[] credentials) throws IOException {
         String ubicacion = "C:\\\\BACKUPS\\\\" + nameBackup;
     
@@ -251,8 +317,9 @@ public class DatabaseBackup {
         String password = credentials[1];
         String puerto = credentials[2];
         String dbName = credentials[3];
+        String dbIp = credentials[4];
     
-        String url = "jdbc:mysql://127.0.0.1:" + puerto + "/?zeroDateTimeBehavior=convertToNull";
+        String url = "jdbc:mysql://"+dbIp+":" + puerto + "/?zeroDateTimeBehavior=convertToNull";
     
         String consulta = "SHOW databases";
         boolean isDbExist = false;
@@ -262,12 +329,12 @@ public class DatabaseBackup {
              Statement stmt = conexion.createStatement()) {
     
             // Configurar el sql_mode compatible antes de proceder
-            String ajustarSqlMode = "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';";
+            /* String ajustarSqlMode = "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';";
             System.out.println("variable global 'NO_AUTO_CREATE_USER' seteada");
-            stmt.executeUpdate(ajustarSqlMode);
+            stmt.executeUpdate(ajustarSqlMode); */
 
             // Ajustar el archivo SQL para eliminar o modificar sql_mode
-            ajustarArchivoSql(ubicacion);
+            eliminarNoAutoCreateUser(ubicacion);
     
             // Revisar si la base de datos existe
             String database = null;
@@ -293,7 +360,7 @@ public class DatabaseBackup {
             useDatabase = "USE " + database;
             stmt.executeUpdate(useDatabase);
     
-            return importBackup(ubicacion, database, usuario, password, puerto);
+            return importBackup(ubicacion, database, usuario, password, puerto, dbIp);
     
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al importar a la base de datos local.\nSi el mensaje dice 'Access denied' le recomendamos que revise la contraseña y/o usuario de la base de datos local,\nde lo contrario contactese con soporte soltelec. \nERROR: \n" + e.getMessage(), "Mensaje", JOptionPane.ERROR_MESSAGE);

@@ -350,6 +350,12 @@ public class DatabaseBackup {
                     }
                 }
             }
+
+            if (isDbExist && dbIp.equalsIgnoreCase("127.0.0.1")) {
+                String dropDatabase = "DROP DATABASE " + dbName;
+                database = dbName;
+                stmt.executeUpdate(dropDatabase);
+            }
     
             if (!isDbExist) {
                 String createDatabase = "CREATE DATABASE " + dbName;

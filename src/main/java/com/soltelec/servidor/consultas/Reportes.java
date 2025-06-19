@@ -387,6 +387,8 @@ public class Reportes {
             try (ResultSet rc = consultaPruebas.executeQuery()) {
                 while (rc.next()) { //recorrera fila por fila el resultado de la consulta
 
+                    if (rc.getString("serialEquipo") == null) continue;
+
                     //Añade una fila de los datos del vehiculo
                     DatosVehiculoCorantioquia filaDatosVehiculo = getVehiculosCorantioquia(rc);
                     listaDatosVehiculo.add(filaDatosVehiculo);
@@ -467,7 +469,11 @@ public class Reportes {
                 while (rc.next()) {
                     //Colocara datos segun cada fila que encuentre
 
-                    if(rc.getString("Fecha_prueba")==null || rc.getString("serialEquipo").equalsIgnoreCase("Serial no encontrado")) continue;
+                    if(
+                        rc.getString("Fecha_prueba")==null || 
+                        rc.getString("serialEquipo") == null || 
+                        rc.getString("serialEquipo").equalsIgnoreCase("Serial no encontrado")
+                    ) continue;
 
                     //Añade los datos del cda
                     listaDatosCda.add(datosDelCda);
@@ -1639,11 +1645,17 @@ public class Reportes {
 
     private static EquipoAnalizadorCorantioquia getAnalizadorCorantioquia(
         ResultSet rc, String software, String vSoftware, PreparedStatement consultaEquipo)throws SQLException{
-
+        boolean esSerialNuevo = true;
+        if (rc.getString("serialEquipo") == null || rc.getString("serialEquipo").equals("otto~;;~-;//;~;;")) {
+            esSerialNuevo = false;
+        }else{
+            esSerialNuevo = rc.getString("serialEquipo").contains("otto");
+        }
+        
         Date fechaPrueba = rc.getDate("Fecha_prueba");
-        String pef = "0."+ rc.getString("pef") ;
-        String marcaAnalizador  = rc.getString("marca");
-        String serie = rc.getString("serialEquipo");
+        
+        
+        String serie =  rc.getString("serialEquipo");
 
         String spanHcBaja = "",
         spanCoBaja = "",
@@ -1660,14 +1672,18 @@ public class Reportes {
         fechaVerificacion = "",
         resultadoVerificacion = "";
 
-        String[] partesSerial = serie.split(";");
+        String[] partesSerial = esSerialNuevo ? serie.split("~")[2].split(";") : null;
 
-        String nSerieAnalizador = partesSerial[1].split("/")[0];
-        String nSerieBanco = partesSerial[0];
-        String nSerieElectronicoAnalizador = nSerieAnalizador+"PEF"+rc.getString("pef")+"-"+partesSerial[0];
+        String nSerieAnalizador = esSerialNuevo ? partesSerial[0].split("-")[1] : "Serial no encontrado";
+        String nSerieBanco = partesSerial != null && partesSerial[0].length() > 2 ? partesSerial[0].split("-")[2] : nSerieAnalizador;
+        String nSerieElectronicoAnalizador = "";
+        String pef = partesSerial[0].split("-")[0] ;
+        String marcaAnalizador  = serie.split("~")[1].split(";")[0];
+
+        System.out.println("nSerieAnalizador = "+nSerieAnalizador);
 
         consultaEquipo.setDate(1, new java.sql.Date(fechaPrueba.getTime()));
-        consultaEquipo.setString(2, ("%"+partesSerial[0]+"%"));
+        consultaEquipo.setString(2, ("%"+nSerieAnalizador+"%"));
 
         try(ResultSet resultadoEquipo = consultaEquipo.executeQuery()){
             while (resultadoEquipo.next()) {
@@ -1686,11 +1702,12 @@ public class Reportes {
                 valorLeidoCo2Alta  = redondeoSegunNorma(resultadoEquipo.getBigDecimal("valor_leido_co2_alta"));
                 fechaVerificacion  = resultadoEquipo.getString("fecha_verificacion");
                 resultadoVerificacion  = resultadoEquipo.getInt("calibracion_aprobada") == 1 ? "Aprobada" : "Reprobada";
+                nSerieElectronicoAnalizador = resultadoEquipo.getString("serialElectronico");
             }
         }
 
         return new EquipoAnalizadorCorantioquia(
-            pef, marcaAnalizador, serie, nSerieAnalizador, nSerieBanco, nSerieElectronicoAnalizador,
+            pef, marcaAnalizador, nSerieAnalizador, nSerieAnalizador, nSerieBanco, nSerieElectronicoAnalizador,
             software, vSoftware, spanHcBaja, spanCoBaja, spanCo2Baja, valorLeidoHcBaja, valorLeidoCoBaja, 
             valorLeidoCo2Baja, spanHcAlta, spanCoAlta, spanCo2Alta, valorLeidoHcAlta, valorLeidoCoAlta, 
             valorLeidoCo2Alta, fechaVerificacion, resultadoVerificacion);
@@ -2083,12 +2100,15 @@ public class Reportes {
         valorLeidoCo2Alta = "",
         fechaVerificacion = "";
 
-        
-
-        String partesSerial = nuevosSeriales ? rc.getString("serialEquipo").split("~")[2].split("-")[1] : serie.split(";")[0];
+        String serialAnalizador = serie.split(";")[0];
+        if (nuevosSeriales) {
+            String apartadoSeriales = rc.getString("serialEquipo").split("~")[2];
+            String serialesBanco = apartadoSeriales.split(";")[0];
+            serialAnalizador = serialesBanco.split("-")[1];
+        }
 
         consultaEquipo.setDate(1, new java.sql.Date(fechaPrueba.getTime()));
-        consultaEquipo.setString(2, ("%"+partesSerial+"%"));
+        consultaEquipo.setString(2, ("%"+serialAnalizador+"%"));
 
         try(ResultSet resultadoEquipo = consultaEquipo.executeQuery()){
             while (resultadoEquipo.next()) {

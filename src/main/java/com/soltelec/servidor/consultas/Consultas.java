@@ -92,7 +92,7 @@ public class Consultas {
         "    INNER JOIN hoja_pruebas AS hp ON p.hoja_pruebas_for = hp.TESTSHEET\n" + //
         "    INNER JOIN vehiculos AS v ON hp.Vehiculo_for = v.CAR\n" + //
         "    INNER JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
-        "    INNER JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
+        "    LEFT JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
         "    LEFT JOIN defxprueba AS dp ON dp.id_prueba =p.Id_Pruebas\n" + //
         "    LEFT JOIN defectos AS d ON d.CARDEFAULT = dp.id_defecto\n" + //
         "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
@@ -128,7 +128,7 @@ public class Consultas {
         "    cdp.banco_alta_co2 AS valor_leido_co2_alta,\n" + //
         "    c.CURDATE AS fecha_verificacion, \n" + //
         "    c.aprobada AS calibracion_aprobada, \n" + //
-        "    c.id_equipo\n" + //
+        "    c.id_equipo, e.serial as serialElectronico\n" + //
         "FROM \n" + //
         "    calibraciones AS c \n" + //
         "    INNER JOIN calibracion_dos_puntos AS cdp ON cdp.CALIBRATION = c.CALIBRATION\n" + //

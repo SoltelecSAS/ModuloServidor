@@ -4,6 +4,7 @@
  */
 package com.soltelec.servidor.dao;
 
+import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.utils.CMensajes;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,7 +15,7 @@ import java.sql.Statement;
  *
  * @author SOLTELEC
  */
-public class Conexion {
+public class Conexion2 {
 
     public static String password = "passfabian";
     public static String usuario = "fabian";
@@ -40,7 +41,9 @@ public class Conexion {
         try {
            // con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/" + db, usuario, password);
 
-             con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/" + db, usuario, password);
+            // con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/" + db, usuario, password);
+
+            con = (Connection) DriverManager.getConnection("jdbc:mysql://" + Conexion.getIpServidor() + ":" + Conexion.getPuerto() + "/" + Conexion.getBaseDatos(), Conexion.getUsuario(), Conexion.getContrasena());
 
             st = (Statement) con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 

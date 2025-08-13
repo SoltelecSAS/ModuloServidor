@@ -10,7 +10,7 @@
  */
 package com.soltelec.servidor.igrafica;
 
-import com.soltelec.servidor.dao.Conexion;
+import com.soltelec.servidor.dao.Conexion2;
 import com.soltelec.servidor.dao.PropietariosJpaController;
 import com.soltelec.servidor.model.Propietarios;
 import com.soltelec.servidor.utils.CValidaciones;

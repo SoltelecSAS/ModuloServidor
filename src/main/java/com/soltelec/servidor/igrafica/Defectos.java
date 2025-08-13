@@ -10,7 +10,7 @@
  */
 package com.soltelec.servidor.igrafica;
 
-import com.soltelec.servidor.dao.Conexion;
+import com.soltelec.servidor.dao.Conexion2;
 import com.soltelec.servidor.dao.DefectosJpaController;
 import java.awt.Dimension;
 import java.util.List;
@@ -36,7 +36,7 @@ public class Defectos extends javax.swing.JInternalFrame {
                 false, //maximizable
                 true);
 
-        Conexion.cargarConexion();
+        Conexion2.cargarConexion();
         initComponents();
         dimension();        
     }

@@ -18,6 +18,7 @@ import java.util.List;
 import com.soltelec.servidor.conexion.Conexion;
 import com.soltelec.servidor.dtos.DatosCda;
 import com.soltelec.servidor.dtos.Abortos.Abortos;
+import com.soltelec.servidor.dtos.clientes.Clientes;
 import com.soltelec.servidor.dtos.fugas.Fugas;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.CorantioquiaCornare;
 import com.soltelec.servidor.dtos.reporte_corantioquia_cornare.DatosPruebaCorantioquia;
@@ -176,6 +177,69 @@ public class Reportes {
                     );
                         
                     listaDatos.add(fuga);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Genera una lista con todos los datos
+        return listaDatos;
+    }
+    
+    public static List<Clientes> getClientes(Date fechaInicio, Date fechaFin) {
+
+        List<Clientes> listaDatos = new ArrayList<>();
+        String consulta = Consultas.getClientes();
+
+        // Formateador para la fecha en el formato que deseas
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+            PreparedStatement consultaDagma = conexion.prepareStatement(consulta)) {
+
+            // Añadir parámetros de la consulta (los que aparecen como ? en la consulta)
+            consultaDagma.setDate(1, new java.sql.Date(fechaInicio.getTime())); // Selecciona el primer ?
+            consultaDagma.setDate(2, new java.sql.Date(fechaFin.getTime())); // Selecciona el segundo ?
+
+            // rc representa el resultado de la consulta
+            try (ResultSet rc = consultaDagma.executeQuery()) {
+                while (rc.next()) {
+                    // Formatear la fecha antes de agregarla al objeto
+                    
+                    String placa = rc.getString("CARPLATE");
+                    String fechaIngreso = dateFormat.format(rc.getTimestamp("Fecha_ingreso_vehiculo"));
+                    String nombreCliente = rc.getString("Nombres");
+                    String apellidoCliente = rc.getString("Apellidos");
+                    String telefono1 = rc.getString("Numero_telefono");
+                    String telefono2 = rc.getString("celular");
+                    String marca = rc.getString("Nombre_marca");
+                    String linea = rc.getString("nombre_linea");
+                    String modelo = rc.getString("Modelo");
+                    String tipoVehiculo = rc.getString("tipo_vehiculo");
+                    String claseVehiculo = rc.getString("Nombre_clase");
+                    String tipoCombustible = rc.getString("Nombre_gasolina");
+                    String tipoServicio = rc.getString("Nombre_servicio");
+                    String numeroChasis = rc.getString("numero_chasis");
+                    
+                    // Colocar datos según cada columna que encuentres
+                    Clientes cliente = new Clientes(
+                        placa, 
+                        fechaIngreso, 
+                        nombreCliente, 
+                        apellidoCliente, 
+                        telefono1, 
+                        telefono2,
+                        marca,
+                        linea,
+                        modelo,
+                        tipoVehiculo,
+                        claseVehiculo,
+                        tipoCombustible,
+                        tipoServicio,
+                        numeroChasis
+                    );
+                    listaDatos.add(cliente);
                 }
             }
         } catch (SQLException e) {

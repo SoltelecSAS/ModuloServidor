@@ -1,1 +1,1 @@
-mysqldump --defaults-extra-file=mysql.cnf --hex-blob --host=127.0.0.1 --port=3306 villabel > C:\\BACKUPS\\29-01-2025.sql
+mysqldump --defaults-extra-file=mysql.cnf --hex-blob --host=100.110.127.104 --port=3306 db_cda > C:\\BACKUPS\\10-07-2025.sql

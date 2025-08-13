@@ -153,6 +153,7 @@ public class Principal extends javax.swing.JFrame {
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         jMenuNormasPermisibles2 = new javax.swing.JMenuItem();
         jMenuNormasPermisibles3 = new javax.swing.JMenuItem();
+        jMenuNormasPermisibles4 = new javax.swing.JMenuItem();
 
         jMenuItem10.setText("jMenuItem10");
 
@@ -648,6 +649,15 @@ public class Principal extends javax.swing.JFrame {
         });
         jMenu9.add(jMenuNormasPermisibles3);
 
+        jMenuNormasPermisibles4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/soltelec/servidor/images/book_accept.png"))); // NOI18N
+        jMenuNormasPermisibles4.setText("Informacion clientes");
+        jMenuNormasPermisibles4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuNormasPermisibles4ActionPerformed(evt);
+            }
+        });
+        jMenu9.add(jMenuNormasPermisibles4);
+
         jMenuBar1.add(jMenu9);
 
         setJMenuBar(jMenuBar1);
@@ -930,6 +940,10 @@ public class Principal extends javax.swing.JFrame {
 
         RegistroFugas();
     }//GEN-LAST:event_jMenuNormasPermisibles3ActionPerformed
+
+    private void jMenuNormasPermisibles4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuNormasPermisibles4ActionPerformed
+        RegistroClientes();
+    }//GEN-LAST:event_jMenuNormasPermisibles4ActionPerformed
 
     protected void hojaPruebas() {
         FrmPruebas frame = new FrmPruebas();
@@ -1539,6 +1553,26 @@ public class Principal extends javax.swing.JFrame {
         } catch (java.beans.PropertyVetoException e) {
         }
     }
+    
+    
+    protected void RegistroClientes() {
+        RegistroClientes frame = new RegistroClientes();
+        frame.setSize(this.getToolkit().getScreenSize());
+        frame.setVisible(true);
+        desktop.add(frame);
+
+        //maximizar pantalla
+        try {
+            frame.setMaximum(rootPaneCheckingEnabled);
+        } catch (PropertyVetoException ex) {
+            LOG.log(Level.SEVERE, "Error al maximizar frame: {0}", ex.getMessage());
+        }
+
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {
+        }
+    }
 
 //--hg
 
@@ -1901,6 +1935,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuNormasPermisibles;
     private javax.swing.JMenuItem jMenuNormasPermisibles2;
     private javax.swing.JMenuItem jMenuNormasPermisibles3;
+    private javax.swing.JMenuItem jMenuNormasPermisibles4;
     private javax.swing.JMenuItem jMenuNormasTiposMedida;
     private javax.swing.JMenuItem jMenuSicov;
     private javax.swing.JMenuItem jMenuUsuariosConsulta;

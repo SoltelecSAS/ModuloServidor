@@ -10,7 +10,7 @@
  */
 package com.soltelec.servidor.igrafica;
 
-import com.soltelec.servidor.dao.Conexion;
+import com.soltelec.servidor.dao.Conexion2;
 import com.soltelec.servidor.dao.PruebasJpaController;
 import com.soltelec.servidor.dao.TipoPruebaJpaController;
 import com.soltelec.servidor.model.TipoPrueba;

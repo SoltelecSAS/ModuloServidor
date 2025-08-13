@@ -302,9 +302,9 @@ public class BackupDatabase {
             }
 
             // Datos de conexión
-            String dbName = "db_cda"; // Nombre de la base de datos
-            String dbHost = "127.0.0.1"; // Dirección IP del servidor (localhost o IP en red local)
-            String dbPort = "3306"; // Puerto de MySQL
+            String dbName = Conexion.getBaseDatos(); // Nombre de la base de datos
+            String dbHost = Conexion.getIpServidor(); // Dirección IP del servidor (localhost o IP en red local)
+            String dbPort = Conexion.getPuerto(); // Puerto de MySQL
             
             String destinationFile = "";
 
@@ -328,7 +328,7 @@ public class BackupDatabase {
             );
 
             // Imprimir el comando para verificar
-            System.out.println("Se ejecuta en cmd: " + executeCmd);
+            //System.out.println("Se ejecuta en cmd: " + executeCmd);
 
             // Ejecutar el proceso
             Process runtimeProcess = Runtime.getRuntime().exec(new String[]{"bash", "-c", executeCmd});

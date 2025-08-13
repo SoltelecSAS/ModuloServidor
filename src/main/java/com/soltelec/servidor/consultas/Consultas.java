@@ -2324,4 +2324,24 @@ public class Consultas {
         "where c.CURDATE between ? and ? \r\n" + //
         "and id_tipo_calibracion = 3 order by c.CURDATE desc;";
     }
+
+    public static String getClientes(){
+        return
+        "select\r\n" + //
+        "  v.CARPLATE, p.Nombres, p.Apellidos, p.Numero_telefono, p.celular, m.Nombre_marca, lv.CRLNAME as nombre_linea, \r\n" + //
+        "  hp.Fecha_ingreso_vehiculo, v.Modelo, tv.Nombre as tipo_vehiculo, cv.Nombre_clase, tg.Nombre_gasolina, s.Nombre_servicio,\r\n" + //
+        "  v.numero_chasis\r\n" + //
+        "  from hoja_pruebas hp \r\n" + //
+        "  inner join vehiculos v on v.CAR = hp.Vehiculo_for\r\n" + //
+        "  inner join propietarios p on p.CAROWNER = v.CAROWNER\r\n" + //
+        "  inner join tipo_vehiculo tv on tv.CARTYPE = v.CARTYPE\r\n" + //
+        "  inner join clases_vehiculo cv on cv.CLASS = v.CLASS\r\n" + //
+        "  inner join tipos_gasolina tg on tg.FUELTYPE = v.FUELTYPE\r\n" + //
+        "  inner join servicios s on s.SERVICE = v.SERVICE\r\n" + //
+        "  inner join marcas m on m.CARMARK = v.CARMARK\r\n" + //
+        "  inner join lineas_vehiculos lv on lv.CARLINE = v.CARLINE\r\n" + //
+        "\twhere hp.Fecha_ingreso_vehiculo between ? and ?\r\n" + //
+        "    group by v.CARPLATE\r\n" + //
+        "    order by hp.Fecha_ingreso_vehiculo asc;";
+    }
 }

@@ -327,8 +327,8 @@ public class ReporteCVC extends javax.swing.JInternalFrame {
         cargarInformacionCda();//Datos generales de la inspeccion
         for (Pruebas pruebasebas : lstPruebas) {
             //Informacion del vehiculo
-            if (pruebasebas.getHojaPruebas().getTestsheet() == 16290) {
-                int e = 0;
+            if (pruebasebas.getHojaPruebas() == null) {
+                continue; // Si no hay hoja de pruebas, saltar a la siguiente prueba
             }
             if (pruebasebas.getHojaPruebas().getReinspeccionList2().size() > 0) {
                 Reinspeccion r = pruebasebas.getHojaPruebas().getReinspeccionList2().iterator().next();

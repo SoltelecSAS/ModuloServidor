@@ -77,6 +77,7 @@ public class ReporteCorAntioquia extends javax.swing.JInternalFrame {
         datosVehiculos = new DefaultTableModel();
         datosVehiculos.addColumn("Numero de Certificado");
         datosVehiculos.addColumn("Marca");
+        datosVehiculos.addColumn("Linea");
         datosVehiculos.addColumn("Año Modelo");
         datosVehiculos.addColumn("Placa");
         datosVehiculos.addColumn("Cilindraje (cm3)");
@@ -85,7 +86,8 @@ public class ReporteCorAntioquia extends javax.swing.JInternalFrame {
 
 //      ******Datos de la Prueba******
         datosPrueba = new DefaultTableModel();
-        datosPrueba.addColumn("fecha de Realizacion de Prueba");
+        datosPrueba.addColumn("fecha de inicio de Prueba");
+        datosPrueba.addColumn("fecha de fin de Prueba");
         datosPrueba.addColumn("Inspector");
         datosPrueba.addColumn("Temperatura Ambiente");
         datosPrueba.addColumn("Humedad Relativa");
@@ -189,6 +191,7 @@ public class ReporteCorAntioquia extends javax.swing.JInternalFrame {
             Object[] fila = {
                 datosVehiculo.getNumeroCertificado(),
                 datosVehiculo.getMarca(),
+                datosVehiculo.getLinea(),
                 datosVehiculo.getAnoModelo(),
                 datosVehiculo.getPlaca(),
                 datosVehiculo.getCilindrajeCm3(),
@@ -200,7 +203,8 @@ public class ReporteCorAntioquia extends javax.swing.JInternalFrame {
 
         datosPruebasDTO.stream().forEach(datoPrueba ->{
             Object [] fila ={
-                datoPrueba.getFechaPrueba(),
+                datoPrueba.getFechaInicioPrueba(),
+                datoPrueba.getFechaFinPrueba(),
                 datoPrueba.getNombreUsuario(),
                 datoPrueba.getTemperaturaAmbiente(),
                 datoPrueba.getHumedadRelativa(),

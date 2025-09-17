@@ -205,7 +205,7 @@ public class ReporteCornare extends javax.swing.JInternalFrame {
 
         datosPruebasDTO.stream().forEach(datoPrueba ->{
             Object [] fila ={
-                datoPrueba.getFechaPrueba(),
+                datoPrueba.getFechaInicioPrueba(),
                 datoPrueba.getNombreUsuario(),
                 datoPrueba.getTemperaturaAmbiente(),
                 datoPrueba.getHumedadRelativa(),

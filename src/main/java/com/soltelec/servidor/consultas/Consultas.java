@@ -85,13 +85,17 @@ public class Consultas {
         "    e.marca, \n" + //
         "    p.serialEquipo, \n" + //
         "    e.serial, \n" + //
-        "    e.id_equipo\n" + //
+        "    e.id_equipo,\n" + //
+        "    lv.CRLNAME as linea_vehiculo,\n" + //
+        "    p.Fecha_prueba,\n" + //
+        "    p.Fecha_final\n" + //
         "FROM \n" + //
         "    pruebas AS p \n" + //
         "    INNER JOIN usuarios AS u ON u.GEUSER = p.Usuario_for\n" + //
         "    INNER JOIN hoja_pruebas AS hp ON p.hoja_pruebas_for = hp.TESTSHEET\n" + //
         "    INNER JOIN vehiculos AS v ON hp.Vehiculo_for = v.CAR\n" + //
         "    INNER JOIN marcas AS m ON m.CARMARK = v.CARMARK\n" + //
+        "    LEFT JOIN lineas_vehiculos lv on lv.CARLINE = v.CARLINE \n" + //
         "    LEFT JOIN equipos AS e ON e.serialresolucion = p.serialEquipo\n" + //
         "    LEFT JOIN defxprueba AS dp ON dp.id_prueba =p.Id_Pruebas\n" + //
         "    LEFT JOIN defectos AS d ON d.CARDEFAULT = dp.id_defecto\n" + //
@@ -2024,8 +2028,8 @@ public class Consultas {
         "\th.con_hoja_prueba as numeroFormato,\n" + //
         "    p.Fecha_prueba,\n" + //
         "    p.Aprobada,\n" + //
-        "    c.CONSECUTIVE,\n" + //
-        "    c.consecutivo_runt,\n" + //
+        "    h.con_hoja_prueba as CONSECUTIVE,\n" + //
+        "    h.consecutivo_runt as consecutivo_runt,\n" + //
         "    v.CARPLATE,\n" + //
         "    s.Nombre_servicio,\n" + //
         "    vc.Nombre_clase,\n" + //
@@ -2274,15 +2278,24 @@ public class Consultas {
         "h.Numero_intentos\n" + //
         "FROM \n" + //
         "    hoja_pruebas h\n" + //
-        "    INNER JOIN certificados c ON c.TESTSHEET = h.TESTSHEET\n" + //
-        "    INNER JOIN vehiculos v ON v.CAR = h.Vehiculo_for\n" + //
-        "    INNER JOIN clases_vehiculo vc ON vc.CLASS = v.CLASS\n" + //
-        "    INNER JOIN servicios s ON s.SERVICE = v.SERVICE\n" + //
-        "    INNER JOIN tipos_gasolina tg ON tg.FUELTYPE = v.FUELTYPE\n" + //
-        "    LEFT JOIN pruebas p ON h.TESTSHEET = p.hoja_pruebas_for\n" + //
+        "    LEFT JOIN certificados c ON c.TESTSHEET = h.TESTSHEET\n" + //
+        "    LEFT JOIN vehiculos v ON v.CAR = h.Vehiculo_for\n" + //
+        "    LEFT JOIN clases_vehiculo vc ON vc.CLASS = v.CLASS\n" + //
+        "    LEFT JOIN servicios s ON s.SERVICE = v.SERVICE\n" + //
+        "    LEFT JOIN tipos_gasolina tg ON tg.FUELTYPE = v.FUELTYPE\n" + //
+        "    LEFT JOIN (\r\n" + //
+        "       SELECT *\r\n" + //
+        "       FROM pruebas p1\r\n" + //
+        "       WHERE p1.Fecha_prueba = (\r\n" + //
+        "           SELECT MAX(p2.Fecha_prueba)\r\n" + //
+        "           FROM pruebas p2\r\n" + //
+        "           WHERE p2.hoja_pruebas_for = p1.hoja_pruebas_for\r\n" + //
+        "           AND p2.Tipo_prueba_for = p1.Tipo_prueba_for\r\n" + //
+        "       )\r\n" + //
+        "    ) p ON h.TESTSHEET = p.hoja_pruebas_for" + //
         "    LEFT JOIN medidas AS m1 ON p.Id_Pruebas = m1.TEST\n" + //
-        "    INNER JOIN marcas mr ON mr.CARMARK = v.CARMARK\n" + //
-        "    INNER JOIN lineas_vehiculos lv ON lv.CARLINE = v.CARLINE\n" + //
+        "    LEFT JOIN marcas mr ON mr.CARMARK = v.CARMARK\n" + //
+        "    LEFT JOIN lineas_vehiculos lv ON lv.CARLINE = v.CARLINE\n" + //
         "\t\n" + //
         "WHERE \n" + //
         "    DATE(h.Fecha_ingreso_vehiculo) BETWEEN ? AND ?\n" + //

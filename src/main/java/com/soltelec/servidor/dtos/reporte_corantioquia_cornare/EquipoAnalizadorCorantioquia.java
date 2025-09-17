@@ -1,5 +1,7 @@
 package com.soltelec.servidor.dtos.reporte_corantioquia_cornare;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -26,7 +28,7 @@ public class EquipoAnalizadorCorantioquia {
     private String valorLeidoHcAlta;
     private String valorLeidoCoAlta;
     private String valorLeidoCo2Alta;
-    private String fechaVerificacion;
+    private LocalDateTime fechaVerificacion;
     private String resultadoVerificacion;
     
 	@Override

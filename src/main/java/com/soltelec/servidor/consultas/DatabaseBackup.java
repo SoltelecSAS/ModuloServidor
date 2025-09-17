@@ -1,6 +1,5 @@
 package com.soltelec.servidor.consultas;
 
-import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,7 +16,6 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import org.slf4j.Logger;
@@ -373,52 +370,5 @@ public class DatabaseBackup {
             e.printStackTrace();
         }
         throw new BackupException("No se pudo importar");
-    }
-
-    private static void ajustarArchivoSql(String archivoSql) throws IOException {
-        File archivoOriginal = new File(archivoSql);
-        File archivoTemporal = new File(archivoSql + ".tmp");
-    
-        // Leer línea por línea y escribir solo las necesarias en el archivo temporal
-        try (BufferedReader reader = new BufferedReader(new FileReader(archivoOriginal));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(archivoTemporal))) {
-    
-            String linea;
-            while ((linea = reader.readLine()) != null) {
-                // Ignorar líneas que contengan "SET sql_mode"
-                if (linea.contains("SET sql_mode")) {
-                    logger.info("Eliminando línea: " + linea);
-                    continue;
-                }
-                writer.write(linea);
-                writer.newLine();
-            }
-        }
-    
-        // Reemplazar el archivo original con el archivo temporal
-        if (!archivoOriginal.delete()) {
-            throw new IOException("No se pudo eliminar el archivo original: " + archivoOriginal.getAbsolutePath());
-        }
-    
-        if (!archivoTemporal.renameTo(archivoOriginal)) {
-            throw new IOException("No se pudo renombrar el archivo temporal a: " + archivoOriginal.getAbsolutePath());
-        }
-    }
-    
-
-    private static String selectPathBackup() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Selecciona un archivo");
-        
-        // Muestra el diálogo para seleccionar un archivo
-        int seleccion = fileChooser.showOpenDialog(null);
-        
-        if (seleccion == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            return file.getAbsolutePath();
-        } else {
-            // Si el usuario cancela la selección, retorna null
-            return null;
-        }
     }
 }

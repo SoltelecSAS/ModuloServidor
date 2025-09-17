@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -1099,15 +1100,6 @@ public class Reportes {
 
             DatosCda datosDelCda = getDatosCda(consultaCda, obtenerDepartamento, obtenerNorma, stmt, false);
             
-            String software = "";
-            String vSoftware="";
-
-            try(ResultSet resultadoSoft = consultaSoftware.executeQuery()){
-                while (resultadoSoft.next()) {
-                    software = resultadoSoft.getString("nombre");
-                    vSoftware = resultadoSoft.getString("version");
-                }
-            }
 
             //rc representa el resultado de la consulta pruebas
             try (ResultSet rc = consultaPruebas.executeQuery()) {
@@ -1137,9 +1129,6 @@ public class Reportes {
                     }else if (rc.getString("serial_nuevo") != null){
                         String[] serialesNuevos = rc.getString("serial_nuevo").split("~");
                         if (serialesNuevos.length < 2) continue;
-                        
-                        String serialesAnalizador= "";
-                        serialesAnalizador = serialesNuevos[2].split(";")[0];
 
                         String valorPef = serialesNuevos[2].split("-")[0];
 
@@ -1276,341 +1265,342 @@ public class Reportes {
             try (ResultSet rc = consultaPruebas.executeQuery()) {
                 while (rc.next()) {
 
-                    if(rc.getBigDecimal("P_HC_ALTO_H") == null) continue;
-
                     //Añade los datos del cda
                     listaDatosCda.add(datosDelCda);
 
-                    //Datos Propietarios
-                    String tipIdeProp = rc.getString("TIP_IDE_PROP").startsWith("C") ? "C": "N",
-                    numIdeProp = rc.getString("NUM_IDE_PROP"),
-                    nomProp = rc.getString("NOM_PROP"),
-                    dirProp = rc.getString("DIR_PROP"),
-                    tel1Prop = rc.getString("TEL1_PROP"),
-                    tel2Prop = "",
-                    munProp = rc.getString("MUN_PROP"),
-                    corrEProp = rc.getString("CORR_E_PROP");
+                    try {
+                        //Datos Propietarios
+                        String tipIdeProp = rc.getString("TIP_IDE_PROP").startsWith("C") ? "C": "N",
+                        numIdeProp = rc.getString("NUM_IDE_PROP"),
+                        nomProp = rc.getString("NOM_PROP"),
+                        dirProp = rc.getString("DIR_PROP"),
+                        tel1Prop = rc.getString("TEL1_PROP"),
+                        tel2Prop = "",
+                        munProp = rc.getString("MUN_PROP"),
+                        corrEProp = rc.getString("CORR_E_PROP");
 
-                    //Datos vehiculo
-                    String placa = rc.getString("PLACA"),
-                    modelo = rc.getString("MODELO"),
-                    numMotor = rc.getString("NUM_MOTOR"),
-                    vin = rc.getString("VIN"),
-                    modMotor = "NO",
-                    diaEscape = rc.getString("DIA_ESCAPE"),
-                    cilindraje = rc.getString("CILINDRAJE"),
-                    licTrans = rc.getString("LIC_TRANS"),
-                    km = rc.getString("KM").equalsIgnoreCase("0") ? "NO FUNCIONAL" : rc.getString("KM"),
-                    gnvConv = rc.getString("GNV_CONV").equalsIgnoreCase("N") ? "NO" : (rc.getString("GNV_CONV").equalsIgnoreCase("y") ? "SI" : "N/A"),
-                    gnvConvV = rc.getString("GNV_CONV_V"),
-                    marca = rc.getString("MARCA"),
-                    linea = rc.getString("LINEA"),
-                    clase = rc.getString("CLASE"),
-                    servicio = rc.getString("SERVICIO"),
-                    tipComb = rc.getString("TIP_COMB").equalsIgnoreCase("GAS - GASOLINA") ? "GAS GASOL" :  rc.getString("TIP_COMB"),
-                    tipMotor = rc.getString("TIP_MOTOR")+"T",
-                    rpmFab = "NO",
-                    ralMinFab = "",
-                    ralMaxFab = "",
-                    gobMinFab = "",
-                    gobMaxFab = "",
-                    disMotor = rc.getString("DIS_MOTOR"),
-                    numEscape = rc.getString("NUM_ESCAPE"),
-                    diseno = rc.getString("diseno");
+                        //Datos vehiculo
+                        String placa = rc.getString("PLACA"),
+                        modelo = rc.getString("MODELO"),
+                        numMotor = rc.getString("NUM_MOTOR"),
+                        vin = rc.getString("VIN"),
+                        modMotor = "NO",
+                        diaEscape = rc.getString("DIA_ESCAPE"),
+                        cilindraje = rc.getString("CILINDRAJE"),
+                        licTrans = rc.getString("LIC_TRANS"),
+                        km = rc.getString("KM").equalsIgnoreCase("0") ? "NO FUNCIONAL" : rc.getString("KM"),
+                        gnvConv = rc.getString("GNV_CONV").equalsIgnoreCase("N") ? "NO" : (rc.getString("GNV_CONV").equalsIgnoreCase("y") ? "SI" : "N/A"),
+                        gnvConvV = rc.getString("GNV_CONV_V"),
+                        marca = rc.getString("MARCA"),
+                        linea = rc.getString("LINEA"),
+                        clase = rc.getString("CLASE"),
+                        servicio = rc.getString("SERVICIO"),
+                        tipComb = rc.getString("TIP_COMB").equalsIgnoreCase("GAS - GASOLINA") ? "GAS GASOL" :  rc.getString("TIP_COMB"),
+                        tipMotor = rc.getString("TIP_MOTOR")+"T",
+                        rpmFab = "NO",
+                        ralMinFab = "",
+                        ralMaxFab = "",
+                        gobMinFab = "",
+                        gobMaxFab = "",
+                        disMotor = rc.getString("DIS_MOTOR"),
+                        numEscape = rc.getString("NUM_ESCAPE"),
+                        diseno = rc.getString("diseno");
 
-                    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-                    if(rc.getString("GNV_CONV") != null && rc.getString("GNV_CONV") !=""){
-                        gnvConv = rc.getString("GNV_CONV").equals("Y") ? "SI" : "NO";
-                        gnvConvV = gnvConv.equals("SI") && !esStringVacio(rc.getString("GNV_CONV_V")) ? format.format(rc.getTimestamp("GNV_CONV_V")) : "";
+                        if(rc.getString("GNV_CONV") != null && rc.getString("GNV_CONV") !=""){
+                            gnvConv = rc.getString("GNV_CONV").equals("Y") ? "SI" : "NO";
+                            gnvConvV = gnvConv.equals("SI") && !esStringVacio(rc.getString("GNV_CONV_V")) ? format.format(rc.getTimestamp("GNV_CONV_V")) : "";
+                        }
+                        
+                        //catalizador
+                        String catalizardor = rc.getString("LUGAR_TEMP").equals("C") ? "SI" : "NO";
+
+                        String serialEquipo = rc.getString("serialEquipo");
+                        System.out.println("SerialEqipo = "+serialEquipo);
+
+                        if (serialEquipo == null || serialEquipo.equals("otto~;;~-;//;~;;") || !serialEquipo.contains("~")) continue;
+
+                        String marcas = serialEquipo.split("~")[1];
+                        String seriales = serialEquipo.split("~")[2];
+
+                        String serialesAnalizador = seriales.split(";")[0];
+                        String valorPef = serialesAnalizador.split("-")[0];
+
+                        String serialesKitRpm = seriales.split(";")[1];
+                        String serialTermohigrometro = seriales.split(";")[2];
+
+                        String marcaTempM = catalizardor.equals("NO") ? marcas.split(";")[1] : "",
+                        serialTempM = catalizardor.equals("NO") ? serialesKitRpm.split("/")[1] : "";
+
+                        BigDecimal valorPefBigDecimal= BigDecimal.valueOf(Double.parseDouble(valorPef));
+
+                        
+                        String[] partesSeriales= serialEquipo.split("~");
+                        //Datos del equipo otto utilizados para inspeccion
+                        String
+                        marcaAg = marcas.split(";")[0],
+                        modAg = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length > 0 ? partesSeriales[3].split(";")[0] : "") : "",
+                        serialAg = serialesAnalizador.split("-")[1],
+                        marcaBg = marcas.split(";")[0],
+                        modBg = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length > 1 ? partesSeriales[3].split(";")[1] : "") : "",
+                        serialBg = serialesAnalizador.split("-").length < 3 ? serialesAnalizador.split("-")[1] : serialesAnalizador.split("-")[2],
+                        pef = valorPef,
+                        serialE = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length < 3 ? "" : partesSeriales[3].split(";")[2]) : "",
+                        serialEOpa = partesSeriales.length > 3 ?(partesSeriales[3].split(";").length < 2 ? "" : partesSeriales[3].split(";")[1]) : "",
+                        marcaRpm = marcas.split(";")[1],
+                        serialRpm = serialesKitRpm.split("/")[0],
+                        marcaTempA = marcas.split(";")[2],
+                        serialTempA = serialTermohigrometro,
+                        marcaHumR = marcas.split(";")[2],
+                        serialHumR = serialTermohigrometro,
+                        nomSoft = software,
+                        verSoft = vSoftware,
+                        desSoft = "Soltelec",
+                        tipIdeVgp = "C",
+                        numIdeVgp = rc.getString("NUM_IDE_VGP"),
+                        nomVgp = rc.getString("NOM_VGP"),
+                        fFugas = format.format(rc.getTimestamp("F_FUGAS")),
+                        fVgp = format.format(rc.getTimestamp("F_VGP")),
+                        pAltaLab = rc.getString("P_ALTO_LAB"),
+                        pAltaCil = rc.getString("P_ALTA_CIL"),
+                        pAltaCer = rc.getString("P_ALTA_CER"),
+                        pBajaLab = rc.getString("P_BAJA_LAB"),
+                        pBajaCil = rc.getString("P_BAJA_CIL"),
+                        pBajaCer = rc.getString("P_BAJA_CER"),
+                        pHcAltoP = redondeoSegunNorma(rc.getBigDecimal("P_HC_ALTO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
+                        pHcAltoH = rc.getString("P_HC_ALTO_H"),
+                        pHcBajoP = redondeoSegunNorma(rc.getBigDecimal("P_HC_BAJO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
+                        pHcBajoH = rc.getString("P_HC_BAJO_H"),
+                        pCoAlto = rc.getString("P_CO_ALTO"),
+                        pCoBajo = redondeoSegunNorma(rc.getBigDecimal("P_CO_BAJO")),
+                        pCo2Alto = redondeoSegunNorma(rc.getBigDecimal("P_CO2_ALTO")),
+                        pCo2Bajo = redondeoSegunNorma(rc.getBigDecimal("P_CO2_BAJO")),
+                        pO2Alto = "0",
+                        pO2Bajo = "0",
+                        rHcAltoP = redondeoSegunNorma(rc.getBigDecimal("R_HC_ALTO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
+                        rHcAltoH = rc.getString("R_HC_ALTO_H"),
+                        rHcBajoP = redondeoSegunNorma(rc.getBigDecimal("R_HC_BAJO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
+                        rHcBajoH = rc.getString("R_HC_BAJO_H"),
+                        rCoAlto = redondeoSegunNorma(rc.getBigDecimal("R_CO_ALTO")),
+                        rCoBajo = redondeoSegunNorma(rc.getBigDecimal("R_CO_BAJO")),
+                        rCo2Alto = redondeoSegunNorma(rc.getBigDecimal("R_CO2_ALTO")),
+                        rCo2Bajo = redondeoSegunNorma(rc.getBigDecimal("R_CO2_BAJO")),
+                        rO2Alto = redondeoSegunNorma(rc.getBigDecimal("R_O2_ALTO")),
+                        rO2Bajo = redondeoSegunNorma(rc.getBigDecimal("R_O2_BAJO")),
+                        cVgp = "",
+                        rVgp = rc.getString("R_VGP").equalsIgnoreCase("1") ? "Aprobada" : "Reprobada";
+
+                        //equipos diesel, algunos datos de diesel ya se encuentran en otto(Los que comparten el mismo nombre)
+                        String 
+                        ltoe = pef,
+                        tipIdeLin = tipIdeVgp,
+                        numIdeLin = numIdeVgp,
+                        nomLin = nomVgp,
+                        fechaLin = esStringVacio(rc.getString("FECHA_LIN")) ? "" : format.format(rc.getTimestamp("FECHA_LIN")),
+                        pAltoLab = rc.getString("P_ALTO_LAB_DI"),
+                        pAltoSerial = rc.getString("P_ALTO_SERIAL_DI"),
+                        pAltoCer = rc.getString("P_ALTO_CER_DI"),
+                        vFdnAlto = rc.getString("V_FDN_ALTO"),
+                        pBajoLab = rc.getString("P_BAJO_LAB_DI"),
+                        pBajoSerial = rc.getString("P_BAJO_SERIAL_DI"),
+                        pBajoCer = rc.getString("P_BAJO_CER_DI"),
+                        vFdnBajo = rc.getString("V_FDN_BAJO"),
+                        rFdnCero = rc.getString("R_FDN_CERO"),
+                        rFdnBajo = rc.getString("R_FDN_BAJO"),
+                        rFdnAlto = rc.getString("R_FDN_ALTO"),
+                        rFndCien = rc.getString("R_FDN_CIEN"),
+                        rLin = rc.getString("R_LIN");
+
+                        //Datos generales de la inspeccion
+                        String
+                        tipIdeDt = "C",
+                        numIdeDt = rc.getString("NUM_IDE_DT"),
+                        nomDt = rc.getString("NOM_DT"),
+                        tipIdeIt = "C",
+                        numIdeIt = rc.getString("NUM_IDE_IT"),
+                        nomIt = rc.getString("NOM_IT"),
+                        numFur = rc.getString("NUM_FUR"),
+                        fechaFur = esStringVacio(rc.getString("FECHA_FUR")) ? "" : format.format(rc.getTimestamp("FECHA_FUR")),
+                        consRunt = rc.getString("CONS_RUNT"),
+                        furAsoc = rc.getString("FUR_ASOC"),
+                        certRtmyg = rc.getString("CERT_RTMYG"),
+                        fIniInsp = esStringVacio(rc.getString("F_INI_INSP")) ? "" : format.format(rc.getTimestamp("F_INI_INSP")),
+                        fFinInsp = esStringVacio(rc.getString("F_FIN_INSP")) ? "" : format.format(rc.getTimestamp("F_FIN_INSP")),
+                        fAborto = esStringVacio(rc.getString("F_ABORTO")) ? "" : format.format(rc.getTimestamp("F_ABORTO")),
+                        cAborto = esStringVacio(rc.getString("F_ABORTO")) ? "" : rc.getString("C_ABORTO"),
+                        lugarTemp = "" ,
+                        tAmb = redondeoSegunNorma(rc.getBigDecimal("temperatura_ambiente")),
+                        hRel = redondeoSegunNorma(rc.getBigDecimal("humedad_relativa"));
+
+                        if ("".equals(tAmb)) continue;
+                        
+
+                        if(rc.getString("LUGAR_TEMP").equals("B")) lugarTemp = "Bloque";
+                        else if(rc.getString("diseno").equalsIgnoreCase("Scooter")) lugarTemp = "";
+                        else if(rc.getString("LUGAR_TEMP").equals("I")) lugarTemp = "Aceite";
+                        else if(rc.getString("LUGAR_TEMP").equals("C")) lugarTemp = "Método de tiempo";
+                        else if(rc.getInt("temperatura_motor") !=0) lugarTemp = "Aceite";
+                        //Resultados otto
+                        String 
+                        tMotor = (
+                            rc.getString("LUGAR_TEMP").equalsIgnoreCase("C") 
+                        ) || (
+                            rc.getString("diseno").equalsIgnoreCase("Scooter") 
+                            && rc.getString("diseno").equalsIgnoreCase("MOTOCICLETA")
+                        ) ? "" : redondeoSegunNorma(rc.getBigDecimal("temperatura_motor")),
+                        rpmRal = rc.getString("rpm_ralenti"),
+                        rpmCru = redondeoSegunNorma(rc.getBigDecimal("rpm_crucero")),
+                        humo = rc.getString("presencia_humo_n_a").equals("1") ? "SI" : "NO",
+                        corrO2 = (
+                            (rc.getDouble("O2_ralenti") > 6 && rc.getString("TIP_MOTOR").equalsIgnoreCase("4")) || 
+                            (rc.getDouble("O2_ralenti") > 6 && rc.getInt("MODELO") > 2008) ||
+                            (rc.getDouble("O2_ralenti") > 11 && rc.getInt("MODELO") < 2009)
+                            ? "SI" : "NO"
+                        ),
+                        dilucion = rc.getDouble("O2_ralenti") > 5 ||  rc.getDouble("co2_ralenti") < 7 ? "SI" : "NO",
+                        rpmFuera = rc.getString("rpm_fuera_rango").equals("1") ? "SI" : "NO",
+                        fugaTubo = rc.getString("fugas_tubo_escape").equals("1") ? "SI" : "NO",
+                        salidasAd = rc.getString("salidas_adicionales_diseno").equals("1") ? "SI" : "NO",
+                        fugaAceite = rc.getString("ausencia_tapa_aceite").equals("1") ? "SI" : "NO",
+                        fugaComb = rc.getString("ausencia_tapa_combustible").equals("1") ? "SI" : "NO",
+                        admisionNc = rc.getString("ausencia_dano_filtro_aire").equals("1") ? "SI" : "NO",
+                        recirculacion = rc.getString("recirculacion").equals("1") ? "SI" : "NO",
+                        accTubo = rc.getString("accesorios").equals("1") ? "SI" : "NO",
+                        refrigNc = rc.getString("refrigeracion").equals("1") ? "SI" : "NO",
+                        rHcRal = redondeoSegunNorma(rc.getBigDecimal("hc_ralenti")),
+                        rHcCru = redondeoSegunNorma(rc.getBigDecimal("HC_crucero")),
+                        rCoRal = redondeoSegunNorma(rc.getBigDecimal("co_ralenti")),
+                        rCoCru = redondeoSegunNorma(rc.getBigDecimal("CO_crucero")),
+                        rCo2Ral = redondeoSegunNorma(rc.getBigDecimal("co2_ralenti")),
+                        rCo2Cru = redondeoSegunNorma(rc.getBigDecimal("CO2_crucero")),
+                        rO2Ral = redondeoSegunNorma(rc.getBigDecimal("O2_ralenti")),
+                        rO2Cru = redondeoSegunNorma(rc.getBigDecimal("O2_crucero")),
+                        
+                        rGasScor = "",
+
+
+                        ncEmisiones = rc.getString("NC_EMISIONES").equals("1") ? "SI" : "NO",
+                        resFinal = rc.getString("RES_FINAL").equals("Y") ? "APROBADO" : "REPROBADO";
+
+
+                        Double HCAnt = 0.0, CO = 0.0, COANT = 0.0, CO2 = 0.0, O2 = 0.0, HCDesp = 0.0;
+                        String datos = "";
+
+                        HCDesp = rc.getDouble("hc_ralenti");
+                        CO = rc.getDouble("co_ralenti");
+                        CO2 = rc.getDouble("co2_ralenti");
+                        O2 = rc.getDouble("O2_ralenti");
+
+                        if ((rc.getDouble("O2_ralenti") > 11 && rc.getInt("MODELO") < 2009)) {
+                            System.out.println("entro if 1");
+                            HCAnt = (HCDesp / ((21 - 11) / (21 - O2)));
+                            COANT = (CO / ((21 - 11) / (21 - O2)));
+                            datos += String.format("%.2f", HCAnt) + "HC";
+                            datos += String.format("%.2f", COANT) + "CO";
+                            datos += String.format("%.2f", CO2) + "CO2";
+                            datos += String.format("%.2f", O2) + "O2";
+                            rGasScor = datos.trim();
+                
+                        }
+                        if (
+                            (rc.getDouble("O2_ralenti") > 6 && rc.getString("TIP_MOTOR").equalsIgnoreCase("4")) || 
+                            (rc.getDouble("O2_ralenti") > 6 && rc.getInt("MODELO") > 2008)
+                        ) {
+                            System.out.println("entro if 2");
+                            HCAnt = (HCDesp / ((21 - 6) / (21 - O2)));
+                            COANT = (CO / ((21 - 6) / (21 - O2)));
+                            datos += String.format("%.2f", HCAnt) + "HC";
+                            datos += String.format("%.2f", COANT) + "CO";
+                            datos += String.format("%.2f", CO2) + "CO2";
+                            datos += String.format("%.2f", O2) + "O2";
+                            rGasScor = datos.trim();
+                        }
+
+                        String
+                        tInicialMotor = redondeoSegunNorma(rc.getBigDecimal("T_INICIAL_MOTOR")),
+                        tFinalMotor = redondeoSegunNorma(rc.getBigDecimal("T_FINAL_MOTOR")),
+                        rpmRal2 = rc.getString("RPM_RAL2"),
+                        rpmGob = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB")),
+                        admicionNc= rc.getString("ausencia_dano_filtro_aire").equals("1") ? "SI" : "NO",
+                        acDisp = rc.getString("AC_DISP").equals("1") ? "SI" : "NO",
+                        difTemp10 = rc.getString("DIF_TEMP10").equals("1") ? "SI" : "NO",
+                        gobNc = rc.getString("GOB_NC").equals("1") ? "SI" : "NO",
+                        funMotor = rc.getString("FUN_MOTOR").equals("1") ? "SI" : "NO",
+                        accSubita = rc.getString("ACC_SUBITA").equals("1") ? "SI" : "NO",
+                        fallaSubita = rc.getString("subita_motor").equals("1") ? "SI" : "NO",
+                        difAritm = rc.getString("DIF_ARITM").equals("1") ? "SI" : "NO",
+                        rpmRalPre = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_PRE")),
+                        rpmGobPre = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_PRE")),
+                        rOpPre = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_PRE"))),
+                        rDenPre = redondeoSegunNorma(rc.getBigDecimal("R_DEN_PRE")),
+                        rpmRalC1 = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_C1")),
+                        rpmGobC1 = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_C1")),
+                        rOpC1 = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_C1"))),
+                        rDenC1 = redondeoSegunNorma(rc.getBigDecimal("R_DEN_C1")),
+                        rpmRalC2 = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_C2")),
+                        rpmGobC2 = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_C2")),
+                        rOpC2 = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_C2"))),
+                        rDenC2 = redondeoSegunNorma(rc.getBigDecimal("R_DEN_C2")),
+                        rpmRalC3 = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_C3")),
+                        rpmGobC3 = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_C3")),
+                        rOpC3 = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_C3"))),
+                        rDenC3 = redondeoSegunNorma(rc.getBigDecimal("R_DEN_C3")),
+                        rFinalOp = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_FINAL_DEN"))),
+                        rFinalDen = redondeoSegunNorma(rc.getBigDecimal("R_FINAL_DEN"));
+
+                        listaPropietarios.add(
+                            new PropietariosNtc(
+                                tipIdeProp, numIdeProp, nomProp, dirProp, tel1Prop, tel2Prop, munProp, corrEProp));
+
+                        listaDatosVehiculos.add(
+                            new VehiculoNtc(
+                                placa, modelo, numMotor, vin, modMotor, diaEscape, cilindraje, licTrans, 
+                                km, gnvConv, gnvConvV, marca, linea, clase, servicio, tipComb, tipMotor, 
+                                rpmFab, ralMinFab, ralMaxFab, gobMinFab, gobMaxFab, disMotor, numEscape, diseno));
+
+                        listaEquiposOtto.add(
+                            new EquiposSoftOttoNtc(
+                                marcaAg, modAg, serialAg, marcaBg, modBg, serialBg, pef, serialE, marcaRpm, 
+                                serialRpm, marcaTempM, serialTempM, marcaTempA, serialTempA, marcaHumR, 
+                                serialHumR, nomSoft, verSoft, desSoft, tipIdeVgp, numIdeVgp, nomVgp, fFugas, 
+                                fVgp, pAltaLab, pAltaCil, pAltaCer, pBajaLab, pBajaCil, pBajaCer, pHcAltoP, 
+                                pHcAltoH, pHcBajoP, pHcBajoH, pCoAlto, pCoBajo, pCo2Alto, pCo2Bajo, pO2Alto, 
+                                pO2Bajo, rHcAltoP, rHcAltoH, rHcBajoP, rHcBajoH, rCoAlto, rCoBajo, rCo2Alto, 
+                                rCo2Bajo, rO2Alto, rO2Bajo, cVgp, rVgp));
+
+                        listaEquiposDiesel.add(
+                            new EquiposSoftDieselNtc(
+                                marcaAg, modAg, serialAg, marcaBg, modBg, serialBg, ltoe, serialEOpa, marcaRpm, 
+                                serialRpm, marcaTempM, serialTempM, marcaTempA, serialTempA, marcaHumR, 
+                                serialHumR, nomSoft, verSoft, desSoft, tipIdeLin, numIdeLin, nomLin, fechaLin, 
+                                pAltoLab, pAltoSerial, pAltoCer, vFdnAlto, pBajoLab, pBajoSerial, pBajoCer, 
+                                vFdnBajo, rFdnCero, rFdnBajo, rFdnAlto, rFndCien, rLin));
+
+                        listaDatosGenerales.add(
+                            new DatosGeneralesNtc(
+                                tipIdeDt, numIdeDt, nomDt, tipIdeIt, numIdeIt, nomIt, numFur, fechaFur, 
+                                consRunt, furAsoc, certRtmyg, fIniInsp, fFinInsp, fAborto, cAborto, 
+                                catalizardor, lugarTemp, tAmb, hRel));
+
+                        listaResultadosOtto.add(
+                            new ResultadosOttoNtc(
+                                tMotor, rpmRal, rpmCru, humo, corrO2, dilucion, rpmFuera, fugaTubo, 
+                                salidasAd, fugaAceite, fugaComb, admisionNc, recirculacion, accTubo, 
+                                refrigNc, rHcRal, rHcCru, rCoRal, rCoCru, rCo2Ral, rCo2Cru, rO2Ral, 
+                                rO2Cru, rGasScor, ncEmisiones, resFinal));
+
+                        listaResultadosDiesel.add(
+                            new ResultadosDieselNtc(
+                                tInicialMotor, tFinalMotor, rpmRal2, rpmGob, rpmFuera, fugaTubo, salidasAd, 
+                                fugaAceite, fugaComb, admicionNc, acDisp, accTubo, refrigNc, difTemp10, 
+                                gobNc, funMotor, accSubita, fallaSubita, difAritm, ncEmisiones, rpmRalPre, 
+                                rpmGobPre, rOpPre, rDenPre, rpmRalC1, rpmGobC1, rOpC1, rDenC1, rpmRalC2, rpmGobC2, rOpC2, 
+                                rDenC2, rpmRalC3, rpmGobC3, rOpC3, rDenC3, rFinalOp, rFinalDen, resFinal));
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                        continue;
                     }
-                    
-                    //catalizador
-                    String catalizardor = rc.getString("LUGAR_TEMP").equals("C") ? "SI" : "NO";
-
-                    String serialEquipo = rc.getString("serialEquipo");
-                    System.out.println("SerialEqipo = "+serialEquipo);
-
-                    if (serialEquipo == null || serialEquipo.equals("otto~;;~-;//;~;;") || !serialEquipo.contains("~")) continue;
-
-                    String marcas = serialEquipo.split("~")[1];
-                    String seriales = serialEquipo.split("~")[2];
-
-                    String serialesAnalizador = seriales.split(";")[0];
-                    String valorPef = serialesAnalizador.split("-")[0];
-
-                    String serialesKitRpm = seriales.split(";")[1];
-                    String serialTermohigrometro = seriales.split(";")[2];
-
-                    String marcaTempM = catalizardor.equals("NO") ? marcas.split(";")[1] : "",
-                    serialTempM = catalizardor.equals("NO") ? serialesKitRpm.split("/")[1] : "";
-
-                    BigDecimal valorPefBigDecimal= BigDecimal.valueOf(Double.parseDouble(valorPef));
-
-                    
-                    String[] partesSeriales= serialEquipo.split("~");
-                    //Datos del equipo otto utilizados para inspeccion
-                    String
-                    marcaAg = marcas.split(";")[0],
-                    modAg = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length > 0 ? partesSeriales[3].split(";")[0] : "") : "",
-                    serialAg = serialesAnalizador.split("-")[1],
-                    marcaBg = marcas.split(";")[0],
-                    modBg = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length > 1 ? partesSeriales[3].split(";")[1] : "") : "",
-                    serialBg = serialesAnalizador.split("-").length < 3 ? serialesAnalizador.split("-")[1] : serialesAnalizador.split("-")[2],
-                    pef = valorPef,
-                    serialE = partesSeriales.length > 3 ? (partesSeriales[3].split(";").length < 3 ? "" : partesSeriales[3].split(";")[2]) : "",
-                    serialEOpa = partesSeriales.length > 3 ?(partesSeriales[3].split(";").length < 2 ? "" : partesSeriales[3].split(";")[1]) : "",
-                    marcaRpm = marcas.split(";")[1],
-                    serialRpm = serialesKitRpm.split("/")[0],
-                    marcaTempA = marcas.split(";")[2],
-                    serialTempA = serialTermohigrometro,
-                    marcaHumR = marcas.split(";")[2],
-                    serialHumR = serialTermohigrometro,
-                    nomSoft = software,
-                    verSoft = vSoftware,
-                    desSoft = "Soltelec",
-                    tipIdeVgp = "C",
-                    numIdeVgp = rc.getString("NUM_IDE_VGP"),
-                    nomVgp = rc.getString("NOM_VGP"),
-                    fFugas = format.format(rc.getTimestamp("F_FUGAS")),
-                    fVgp = format.format(rc.getTimestamp("F_VGP")),
-                    pAltaLab = rc.getString("P_ALTO_LAB"),
-                    pAltaCil = rc.getString("P_ALTA_CIL"),
-                    pAltaCer = rc.getString("P_ALTA_CER"),
-                    pBajaLab = rc.getString("P_BAJA_LAB"),
-                    pBajaCil = rc.getString("P_BAJA_CIL"),
-                    pBajaCer = rc.getString("P_BAJA_CER"),
-                    pHcAltoP = redondeoSegunNorma(rc.getBigDecimal("P_HC_ALTO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
-                    pHcAltoH = rc.getString("P_HC_ALTO_H"),
-                    pHcBajoP = redondeoSegunNorma(rc.getBigDecimal("P_HC_BAJO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
-                    pHcBajoH = rc.getString("P_HC_BAJO_H"),
-                    pCoAlto = rc.getString("P_CO_ALTO"),
-                    pCoBajo = redondeoSegunNorma(rc.getBigDecimal("P_CO_BAJO")),
-                    pCo2Alto = redondeoSegunNorma(rc.getBigDecimal("P_CO2_ALTO")),
-                    pCo2Bajo = redondeoSegunNorma(rc.getBigDecimal("P_CO2_BAJO")),
-                    pO2Alto = "0",
-                    pO2Bajo = "0",
-                    rHcAltoP = redondeoSegunNorma(rc.getBigDecimal("R_HC_ALTO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
-                    rHcAltoH = rc.getString("R_HC_ALTO_H"),
-                    rHcBajoP = redondeoSegunNorma(rc.getBigDecimal("R_HC_BAJO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
-                    rHcBajoH = rc.getString("R_HC_BAJO_H"),
-                    rCoAlto = redondeoSegunNorma(rc.getBigDecimal("R_CO_ALTO")),
-                    rCoBajo = redondeoSegunNorma(rc.getBigDecimal("R_CO_BAJO")),
-                    rCo2Alto = redondeoSegunNorma(rc.getBigDecimal("R_CO2_ALTO")),
-                    rCo2Bajo = redondeoSegunNorma(rc.getBigDecimal("R_CO2_BAJO")),
-                    rO2Alto = redondeoSegunNorma(rc.getBigDecimal("R_O2_ALTO")),
-                    rO2Bajo = redondeoSegunNorma(rc.getBigDecimal("R_O2_BAJO")),
-                    cVgp = "",
-                    rVgp = rc.getString("R_VGP").equalsIgnoreCase("1") ? "Aprobada" : "Reprobada";
-
-                    //equipos diesel, algunos datos de diesel ya se encuentran en otto(Los que comparten el mismo nombre)
-                    String 
-                    ltoe = pef,
-                    tipIdeLin = tipIdeVgp,
-                    numIdeLin = numIdeVgp,
-                    nomLin = nomVgp,
-                    fechaLin = esStringVacio(rc.getString("FECHA_LIN")) ? "" : format.format(rc.getTimestamp("FECHA_LIN")),
-                    pAltoLab = rc.getString("P_ALTO_LAB_DI"),
-                    pAltoSerial = rc.getString("P_ALTO_SERIAL_DI"),
-                    pAltoCer = rc.getString("P_ALTO_CER_DI"),
-                    vFdnAlto = rc.getString("V_FDN_ALTO"),
-                    pBajoLab = rc.getString("P_BAJO_LAB_DI"),
-                    pBajoSerial = rc.getString("P_BAJO_SERIAL_DI"),
-                    pBajoCer = rc.getString("P_BAJO_CER_DI"),
-                    vFdnBajo = rc.getString("V_FDN_BAJO"),
-                    rFdnCero = rc.getString("R_FDN_CERO"),
-                    rFdnBajo = rc.getString("R_FDN_BAJO"),
-                    rFdnAlto = rc.getString("R_FDN_ALTO"),
-                    rFndCien = rc.getString("R_FDN_CIEN"),
-                    rLin = rc.getString("R_LIN");
-
-                    //Datos generales de la inspeccion
-                    String
-                    tipIdeDt = "C",
-                    numIdeDt = rc.getString("NUM_IDE_DT"),
-                    nomDt = rc.getString("NOM_DT"),
-                    tipIdeIt = "C",
-                    numIdeIt = rc.getString("NUM_IDE_IT"),
-                    nomIt = rc.getString("NOM_IT"),
-                    numFur = rc.getString("NUM_FUR"),
-                    fechaFur = esStringVacio(rc.getString("FECHA_FUR")) ? "" : format.format(rc.getTimestamp("FECHA_FUR")),
-                    consRunt = rc.getString("CONS_RUNT"),
-                    furAsoc = rc.getString("FUR_ASOC"),
-                    certRtmyg = rc.getString("CERT_RTMYG"),
-                    fIniInsp = esStringVacio(rc.getString("F_INI_INSP")) ? "" : format.format(rc.getTimestamp("F_INI_INSP")),
-                    fFinInsp = esStringVacio(rc.getString("F_FIN_INSP")) ? "" : format.format(rc.getTimestamp("F_FIN_INSP")),
-                    fAborto = esStringVacio(rc.getString("F_ABORTO")) ? "" : format.format(rc.getTimestamp("F_ABORTO")),
-                    cAborto = esStringVacio(rc.getString("F_ABORTO")) ? "" : rc.getString("C_ABORTO"),
-                    lugarTemp = "" ,
-                    tAmb = redondeoSegunNorma(rc.getBigDecimal("temperatura_ambiente")),
-                    hRel = redondeoSegunNorma(rc.getBigDecimal("humedad_relativa"));
-
-                    if ("".equals(tAmb)) continue;
-                    
-
-                    if(rc.getString("LUGAR_TEMP").equals("B")) lugarTemp = "Bloque";
-                    else if(rc.getString("diseno").equalsIgnoreCase("Scooter")) lugarTemp = "";
-                    else if(rc.getString("LUGAR_TEMP").equals("I")) lugarTemp = "Aceite";
-                    else if(rc.getString("LUGAR_TEMP").equals("C")) lugarTemp = "Método de tiempo";
-                    else if(rc.getInt("temperatura_motor") !=0) lugarTemp = "Aceite";
-                    //Resultados otto
-                    String 
-                    tMotor = (
-                        rc.getString("LUGAR_TEMP").equalsIgnoreCase("C") 
-                    ) || (
-                        rc.getString("diseno").equalsIgnoreCase("Scooter") 
-                        && rc.getString("diseno").equalsIgnoreCase("MOTOCICLETA")
-                    ) ? "" : redondeoSegunNorma(rc.getBigDecimal("temperatura_motor")),
-                    rpmRal = rc.getString("rpm_ralenti"),
-                    rpmCru = redondeoSegunNorma(rc.getBigDecimal("rpm_crucero")),
-                    humo = rc.getString("presencia_humo_n_a").equals("1") ? "SI" : "NO",
-                    corrO2 = (
-                        (rc.getDouble("O2_ralenti") > 6 && rc.getString("TIP_MOTOR").equalsIgnoreCase("4")) || 
-                        (rc.getDouble("O2_ralenti") > 6 && rc.getInt("MODELO") > 2008) ||
-                        (rc.getDouble("O2_ralenti") > 11 && rc.getInt("MODELO") < 2009)
-                        ? "SI" : "NO"
-                    ),
-                    dilucion = rc.getDouble("O2_ralenti") > 5 ||  rc.getDouble("co2_ralenti") < 7 ? "SI" : "NO",
-                    rpmFuera = rc.getString("rpm_fuera_rango").equals("1") ? "SI" : "NO",
-                    fugaTubo = rc.getString("fugas_tubo_escape").equals("1") ? "SI" : "NO",
-                    salidasAd = rc.getString("salidas_adicionales_diseno").equals("1") ? "SI" : "NO",
-                    fugaAceite = rc.getString("ausencia_tapa_aceite").equals("1") ? "SI" : "NO",
-                    fugaComb = rc.getString("ausencia_tapa_combustible").equals("1") ? "SI" : "NO",
-                    admisionNc = rc.getString("ausencia_dano_filtro_aire").equals("1") ? "SI" : "NO",
-                    recirculacion = rc.getString("recirculacion").equals("1") ? "SI" : "NO",
-                    accTubo = rc.getString("accesorios").equals("1") ? "SI" : "NO",
-                    refrigNc = rc.getString("refrigeracion").equals("1") ? "SI" : "NO",
-                    rHcRal = redondeoSegunNorma(rc.getBigDecimal("hc_ralenti")),
-                    rHcCru = redondeoSegunNorma(rc.getBigDecimal("HC_crucero")),
-                    rCoRal = redondeoSegunNorma(rc.getBigDecimal("co_ralenti")),
-                    rCoCru = redondeoSegunNorma(rc.getBigDecimal("CO_crucero")),
-                    rCo2Ral = redondeoSegunNorma(rc.getBigDecimal("co2_ralenti")),
-                    rCo2Cru = redondeoSegunNorma(rc.getBigDecimal("CO2_crucero")),
-                    rO2Ral = redondeoSegunNorma(rc.getBigDecimal("O2_ralenti")),
-                    rO2Cru = redondeoSegunNorma(rc.getBigDecimal("O2_crucero")),
-                    
-                    rGasScor = "",
-
-
-                    ncEmisiones = rc.getString("NC_EMISIONES").equals("1") ? "SI" : "NO",
-                    resFinal = rc.getString("RES_FINAL").equals("Y") ? "APROBADO" : "REPROBADO";
-
-
-                    Double HCAnt = 0.0, CO = 0.0, COANT = 0.0, CO2 = 0.0, CO2ANT = 0.0, O2 = 0.0, HCDesp = 0.0;
-                    String datos = "";
-
-                    HCDesp = rc.getDouble("hc_ralenti");
-                    CO = rc.getDouble("co_ralenti");
-                    CO2 = rc.getDouble("co2_ralenti");
-                    O2 = rc.getDouble("O2_ralenti");
-
-                    if ((rc.getDouble("O2_ralenti") > 11 && rc.getInt("MODELO") < 2009)) {
-                        System.out.println("entro if 1");
-                        HCAnt = (HCDesp / ((21 - 11) / (21 - O2)));
-                        COANT = (CO / ((21 - 11) / (21 - O2)));
-                        CO2ANT = (CO2 / ((21 - 11) / (21 - O2)));
-                        datos += String.format("%.2f", HCAnt) + "HC";
-                        datos += String.format("%.2f", COANT) + "CO";
-                        datos += String.format("%.2f", CO2) + "CO2";
-                        datos += String.format("%.2f", O2) + "O2";
-                        rGasScor = datos.trim();
-            
-                    }
-                    if (
-                        (rc.getDouble("O2_ralenti") > 6 && rc.getString("TIP_MOTOR").equalsIgnoreCase("4")) || 
-                        (rc.getDouble("O2_ralenti") > 6 && rc.getInt("MODELO") > 2008)
-                    ) {
-                        System.out.println("entro if 2");
-                        HCAnt = (HCDesp / ((21 - 6) / (21 - O2)));
-                        COANT = (CO / ((21 - 6) / (21 - O2)));
-                        CO2ANT = (CO2 / ((21 - 6) / (21 - O2)));
-                        datos += String.format("%.2f", HCAnt) + "HC";
-                        datos += String.format("%.2f", COANT) + "CO";
-                        datos += String.format("%.2f", CO2) + "CO2";
-                        datos += String.format("%.2f", O2) + "O2";
-                        rGasScor = datos.trim();
-                    }
-
-                    String
-                    tInicialMotor = redondeoSegunNorma(rc.getBigDecimal("T_INICIAL_MOTOR")),
-                    tFinalMotor = redondeoSegunNorma(rc.getBigDecimal("T_FINAL_MOTOR")),
-                    rpmRal2 = rc.getString("RPM_RAL2"),
-                    rpmGob = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB")),
-                    admicionNc= rc.getString("ausencia_dano_filtro_aire").equals("1") ? "SI" : "NO",
-                    acDisp = rc.getString("AC_DISP").equals("1") ? "SI" : "NO",
-                    difTemp10 = rc.getString("DIF_TEMP10").equals("1") ? "SI" : "NO",
-                    gobNc = rc.getString("GOB_NC").equals("1") ? "SI" : "NO",
-                    funMotor = rc.getString("FUN_MOTOR").equals("1") ? "SI" : "NO",
-                    accSubita = rc.getString("ACC_SUBITA").equals("1") ? "SI" : "NO",
-                    fallaSubita = rc.getString("subita_motor").equals("1") ? "SI" : "NO",
-                    difAritm = rc.getString("DIF_ARITM").equals("1") ? "SI" : "NO",
-                    rpmRalPre = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_PRE")),
-                    rpmGobPre = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_PRE")),
-                    rOpPre = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_PRE"))),
-                    rDenPre = redondeoSegunNorma(rc.getBigDecimal("R_DEN_PRE")),
-                    rpmRalC1 = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_C1")),
-                    rpmGobC1 = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_C1")),
-                    rOpC1 = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_C1"))),
-                    rDenC1 = redondeoSegunNorma(rc.getBigDecimal("R_DEN_C1")),
-                    rpmRalC2 = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_C2")),
-                    rpmGobC2 = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_C2")),
-                    rOpC2 = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_C2"))),
-                    rDenC2 = redondeoSegunNorma(rc.getBigDecimal("R_DEN_C2")),
-                    rpmRalC3 = redondeoSegunNorma(rc.getBigDecimal("RPM_RAL_C3")),
-                    rpmGobC3 = redondeoSegunNorma(rc.getBigDecimal("RPM_GOB_C3")),
-                    rOpC3 = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_DEN_C3"))),
-                    rDenC3 = redondeoSegunNorma(rc.getBigDecimal("R_DEN_C3")),
-                    rFinalOp = redondeoSegunNorma(calcularN(rc.getBigDecimal("R_FINAL_DEN"))),
-                    rFinalDen = redondeoSegunNorma(rc.getBigDecimal("R_FINAL_DEN"));
-
-                    listaPropietarios.add(
-                        new PropietariosNtc(
-                            tipIdeProp, numIdeProp, nomProp, dirProp, tel1Prop, tel2Prop, munProp, corrEProp));
-
-                    listaDatosVehiculos.add(
-                        new VehiculoNtc(
-                            placa, modelo, numMotor, vin, modMotor, diaEscape, cilindraje, licTrans, 
-                            km, gnvConv, gnvConvV, marca, linea, clase, servicio, tipComb, tipMotor, 
-                            rpmFab, ralMinFab, ralMaxFab, gobMinFab, gobMaxFab, disMotor, numEscape, diseno));
-
-                    listaEquiposOtto.add(
-                        new EquiposSoftOttoNtc(
-                            marcaAg, modAg, serialAg, marcaBg, modBg, serialBg, pef, serialE, marcaRpm, 
-                            serialRpm, marcaTempM, serialTempM, marcaTempA, serialTempA, marcaHumR, 
-                            serialHumR, nomSoft, verSoft, desSoft, tipIdeVgp, numIdeVgp, nomVgp, fFugas, 
-                            fVgp, pAltaLab, pAltaCil, pAltaCer, pBajaLab, pBajaCil, pBajaCer, pHcAltoP, 
-                            pHcAltoH, pHcBajoP, pHcBajoH, pCoAlto, pCoBajo, pCo2Alto, pCo2Bajo, pO2Alto, 
-                            pO2Bajo, rHcAltoP, rHcAltoH, rHcBajoP, rHcBajoH, rCoAlto, rCoBajo, rCo2Alto, 
-                            rCo2Bajo, rO2Alto, rO2Bajo, cVgp, rVgp));
-
-                    listaEquiposDiesel.add(
-                        new EquiposSoftDieselNtc(
-                            marcaAg, modAg, serialAg, marcaBg, modBg, serialBg, ltoe, serialEOpa, marcaRpm, 
-                            serialRpm, marcaTempM, serialTempM, marcaTempA, serialTempA, marcaHumR, 
-                            serialHumR, nomSoft, verSoft, desSoft, tipIdeLin, numIdeLin, nomLin, fechaLin, 
-                            pAltoLab, pAltoSerial, pAltoCer, vFdnAlto, pBajoLab, pBajoSerial, pBajoCer, 
-                            vFdnBajo, rFdnCero, rFdnBajo, rFdnAlto, rFndCien, rLin));
-
-                    listaDatosGenerales.add(
-                        new DatosGeneralesNtc(
-                            tipIdeDt, numIdeDt, nomDt, tipIdeIt, numIdeIt, nomIt, numFur, fechaFur, 
-                            consRunt, furAsoc, certRtmyg, fIniInsp, fFinInsp, fAborto, cAborto, 
-                            catalizardor, lugarTemp, tAmb, hRel));
-
-                    listaResultadosOtto.add(
-                        new ResultadosOttoNtc(
-                            tMotor, rpmRal, rpmCru, humo, corrO2, dilucion, rpmFuera, fugaTubo, 
-                            salidasAd, fugaAceite, fugaComb, admisionNc, recirculacion, accTubo, 
-                            refrigNc, rHcRal, rHcCru, rCoRal, rCoCru, rCo2Ral, rCo2Cru, rO2Ral, 
-                            rO2Cru, rGasScor, ncEmisiones, resFinal));
-
-                    listaResultadosDiesel.add(
-                        new ResultadosDieselNtc(
-                            tInicialMotor, tFinalMotor, rpmRal2, rpmGob, rpmFuera, fugaTubo, salidasAd, 
-                            fugaAceite, fugaComb, admicionNc, acDisp, accTubo, refrigNc, difTemp10, 
-                            gobNc, funMotor, accSubita, fallaSubita, difAritm, ncEmisiones, rpmRalPre, 
-                            rpmGobPre, rOpPre, rDenPre, rpmRalC1, rpmGobC1, rOpC1, rDenC1, rpmRalC2, rpmGobC2, rOpC2, 
-                            rDenC2, rpmRalC3, rpmGobC3, rOpC3, rDenC3, rFinalOp, rFinalDen, resFinal));
                 }
             }
 
@@ -1663,21 +1653,23 @@ public class Reportes {
         Integer cilindrajeCm3 = rc.getInt("Cinlindraje");
         String tipoMotor = rc.getString("Tiempos_motor") + "T";
         String design = rc.getString("diseño"); 
+        String linea = rc.getString("linea_vehiculo");
 
         return new DatosVehiculoCorantioquia(
-            numeroCertificado, consecutivoPrueba, marca, modelo, placa, cilindrajeCm3, tipoMotor, design);
+            numeroCertificado, consecutivoPrueba, marca, modelo, placa, cilindrajeCm3, tipoMotor, design, linea);
     }
 
     private static DatosPruebaCorantioquia getDatosPruebaCorantioquia(
         ResultSet rc, String ciudad, String direccion) throws SQLException{
 
-        String fechaPruebaStr =  rc.getString("Fecha_prueba");
+        LocalDateTime fechaPrueba = rc.getTimestamp("Fecha_prueba").toLocalDateTime();
+        LocalDateTime fechaFinPrueba = rc.getTimestamp("Fecha_final").toLocalDateTime();
         String nombreUsuario = rc.getString("Nombre_usuario");
         String temperaturaAmbiente = redondeoSegunNorma(rc.getBigDecimal("temperatura_ambiente"));
         String humedadRelativa = redondeoSegunNorma(rc.getBigDecimal("humedad_relativa"));
 
         return new DatosPruebaCorantioquia(
-            fechaPruebaStr, nombreUsuario, temperaturaAmbiente, 
+            fechaPrueba, fechaFinPrueba, nombreUsuario, temperaturaAmbiente,
             humedadRelativa, ciudad, direccion);
     }
 
@@ -1733,8 +1725,9 @@ public class Reportes {
         valorLeidoHcAlta = "",
         valorLeidoCoAlta = "",
         valorLeidoCo2Alta = "",
-        fechaVerificacion = "",
         resultadoVerificacion = "";
+
+        LocalDateTime fechaVerificacion = null;
 
         String[] partesSerial = esSerialNuevo ? serie.split("~")[2].split(";") : null;
 
@@ -1764,7 +1757,7 @@ public class Reportes {
                 valorLeidoHcAlta  = redondeoSegunNorma(resultadoEquipo.getBigDecimal("valor_leido_hc_alta"));
                 valorLeidoCoAlta  = redondeoSegunNorma(resultadoEquipo.getBigDecimal("valor_leido_co_alta"));
                 valorLeidoCo2Alta  = redondeoSegunNorma(resultadoEquipo.getBigDecimal("valor_leido_co2_alta"));
-                fechaVerificacion  = resultadoEquipo.getString("fecha_verificacion");
+                fechaVerificacion  = resultadoEquipo.getTimestamp("fecha_verificacion").toLocalDateTime();
                 resultadoVerificacion  = resultadoEquipo.getInt("calibracion_aprobada") == 1 ? "Aprobada" : "Reprobada";
                 nSerieElectronicoAnalizador = resultadoEquipo.getString("serialElectronico");
             }
@@ -1851,9 +1844,6 @@ public class Reportes {
     private static DatosCda getDatosCda(
         PreparedStatement consultaCda, PreparedStatement obtenerDepartamento, 
         PreparedStatement obtenerNorma, Statement stmt, boolean ntc ) throws SQLException { 
-
-        String crearNormaAplicada = "ALTER TABLE cda ADD COLUMN norma_aplicada VARCHAR(50)";
-        String crearDepartamento = "ALTER TABLE cda ADD COLUMN departamento VARCHAR(50)";
 
         String cm = "";
         String nombreCda = "";

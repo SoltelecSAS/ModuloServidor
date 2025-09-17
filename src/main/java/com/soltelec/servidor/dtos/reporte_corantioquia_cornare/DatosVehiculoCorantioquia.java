@@ -14,10 +14,11 @@ public class DatosVehiculoCorantioquia {
     private Integer cilindrajeCm3;
     private String tipoMotor;
     private String diseño;
+    private String linea;
 
 	@Override
 	public String toString() {
 		return "DatosVehiculo [numeroCertificado=" + numeroCertificado + ", marca=" + marca + ", anoModelo=" + anoModelo
-				+ ", placa=" + placa + ", cilindrajeCm3=" + cilindrajeCm3 + ", tipoMotor=" + tipoMotor + "]";
+				+ ", placa=" + placa + ", cilindrajeCm3=" + cilindrajeCm3 + ", tipoMotor=" + tipoMotor + ", linea=" + linea + "]";
 	}
 }

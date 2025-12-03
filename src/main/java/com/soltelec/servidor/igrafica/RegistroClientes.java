@@ -51,20 +51,30 @@ public class RegistroClientes extends javax.swing.JInternalFrame {
     private void iniciarModelo() {
 
         datosClientes = new DefaultTableModel();
-        datosClientes.addColumn("Placa");                  //0
-        datosClientes.addColumn("Fecha ingreso");  //1
-        datosClientes.addColumn("Nombre propietario");                //2
-        datosClientes.addColumn("Apellido propietario");        //3
-        datosClientes.addColumn("Telefono 1");        //4
-        datosClientes.addColumn("Telefono 2");
-        datosClientes.addColumn("Marca");//5
-        datosClientes.addColumn("Linea"); //6
-        datosClientes.addColumn("Modelo"); //7
-        datosClientes.addColumn("Tipo Vehiculo"); //8
-        datosClientes.addColumn("Clase Vehiculo"); //9
-        datosClientes.addColumn("Tipo Combustible"); //10
-        datosClientes.addColumn("Tipo Servicio"); //11
-        datosClientes.addColumn("Numero Chasis"); //12
+        datosClientes.addColumn("Placa");//0
+        datosClientes.addColumn("Fecha ingreso");//1
+        datosClientes.addColumn("Nombre propietario");//2
+        datosClientes.addColumn("Apellido propietario");//3
+        datosClientes.addColumn("Tipo documento");//4
+        datosClientes.addColumn("Numero documento");//5
+        datosClientes.addColumn("Telefono 1");//6
+        datosClientes.addColumn("Telefono 2");//7
+        datosClientes.addColumn("Direccion");//8
+        datosClientes.addColumn("Ciudad");//9
+        datosClientes.addColumn("Email");//10
+        datosClientes.addColumn("Marca");//11
+        datosClientes.addColumn("Linea"); //12
+        datosClientes.addColumn("Modelo"); //13
+        datosClientes.addColumn("Tipo Vehiculo"); //14
+        datosClientes.addColumn("Clase Vehiculo"); //15
+        datosClientes.addColumn("Tipo Combustible"); //16
+        datosClientes.addColumn("Tipo Servicio"); //17
+        datosClientes.addColumn("Numero Chasis"); //18
+        datosClientes.addColumn("Numero Certificado"); //19
+        datosClientes.addColumn("Director tecnico"); //20
+        datosClientes.addColumn("Recepcionista"); //21
+        datosClientes.addColumn("Fecha Soat"); //22
+        datosClientes.addColumn("Preventiva"); //23
 
 //---------- 
     }
@@ -74,20 +84,30 @@ public class RegistroClientes extends javax.swing.JInternalFrame {
 
         listaDatos.stream().forEach(datos->{
             Object [] fila ={
-                datos.getPlaca(),
-                datos.getUltimaFechaRevision(),
-                datos.getNombre(),
-                datos.getApellido(),
-                datos.getTelefono1(),
-                datos.getTelefono2(),
-                datos.getNombreMarca(),
-                datos.getNombreLinea(),
-                datos.getModelo(),
-                datos.getTipoVehiculo(),
-                datos.getClaseVehiculo(),
-                datos.getTipoCombustible(),
-                datos.getTipoServicio(),
-                datos.getNumeroChasis()
+                datos.getPlaca(), //0
+                datos.getUltimaFechaRevision(), //1
+                datos.getNombre(), //2
+                datos.getApellido(), //3
+                datos.getTipoDocumento(), //4
+                datos.getNumeroDocumento(), //5
+                datos.getTelefono1(), //6
+                datos.getTelefono2(), //7
+                datos.getDireccion(), //8
+                datos.getCiudad(), //9
+                datos.getEmail(), //10
+                datos.getNombreMarca(), //11
+                datos.getNombreLinea(), //12
+                datos.getModelo(), //13
+                datos.getTipoVehiculo(), //14
+                datos.getClaseVehiculo(), //15
+                datos.getTipoCombustible(), //16
+                datos.getTipoServicio(), //17
+                datos.getNumeroChasis(), //18
+                datos.getNumeroCertificado(), //19
+                datos.getDirectorTecnico(), //20
+                datos.getRecepcionista(), //21
+                datos.getFechaSoat(), //22
+                datos.getEsPreventiva() //23
             };
             datosClientes.addRow(fila);
         });

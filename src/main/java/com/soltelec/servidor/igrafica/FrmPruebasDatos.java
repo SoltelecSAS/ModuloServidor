@@ -339,7 +339,7 @@ public class FrmPruebasDatos extends javax.swing.JInternalFrame {
             } else if (id == 2) {
                 msql = "SELECT f.Foto2 FROM fotos f, hoja_pruebas h WHERE  f.id_hoja_pruebas_for = h.TESTSHEET and h.TESTSHEET = " + ban + " ";
             } else if (id == 3) {
-                msql = "SELECT f.Foto1, h.TESTSHEET FROM fotos f, hoja_pruebas h, Vehiculos v WHERE f.id_hoja_pruebas_for = h.TESTSHEET and h.Vehiculo_for = v.car and v.car = " + ban2 + " ";
+                msql = "SELECT f.Foto1, h.TESTSHEET FROM fotos f, hoja_pruebas h, vehiculos v WHERE f.id_hoja_pruebas_for = h.TESTSHEET and h.Vehiculo_for = v.car and v.car = " + ban2 + " ";
             }
 
             PreparedStatement pstm = con.prepareStatement(msql);

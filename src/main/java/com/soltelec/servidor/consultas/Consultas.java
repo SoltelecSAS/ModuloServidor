@@ -2343,6 +2343,8 @@ public class Consultas {
         "select\r\n" + //
         "  v.CARPLATE, p.Nombres, p.Apellidos, p.Numero_telefono, p.celular, m.Nombre_marca, lv.CRLNAME as nombre_linea, \r\n" + //
         "  hp.Fecha_ingreso_vehiculo, v.Modelo, tv.Nombre as tipo_vehiculo, cv.Nombre_clase, tg.Nombre_gasolina, s.Nombre_servicio,\r\n" + //
+        "  hp.consecutivo_runt, u.Nombre_usuario, hp.fecha_exp_soat, hp.preventiva, p.Tipo_identificacion, p.CAROWNER, p.Direccion,\r\n" + //
+        "  c.Nombre_ciudad, p.email, u2.Nombre_usuario as recepcionista,\r\n" + //
         "  v.numero_chasis\r\n" + //
         "  from hoja_pruebas hp \r\n" + //
         "  inner join vehiculos v on v.CAR = hp.Vehiculo_for\r\n" + //
@@ -2353,7 +2355,11 @@ public class Consultas {
         "  inner join servicios s on s.SERVICE = v.SERVICE\r\n" + //
         "  inner join marcas m on m.CARMARK = v.CARMARK\r\n" + //
         "  inner join lineas_vehiculos lv on lv.CARLINE = v.CARLINE\r\n" + //
-        "\twhere hp.Fecha_ingreso_vehiculo between ? and ?\r\n" + //
+        "  inner join usuarios u on u.GEUSER = hp.usuario_resp\r\n" + //
+        "  inner join ciudades c on c.CITY = p.CITY\r\n" + //
+        "  inner join prerevision pr on pr.hoja_prueba_id = hp.TESTSHEET\r\n" + //
+        "  inner join usuarios u2 on u2.GEUSER = pr.usuario\r\n" + //
+        "where hp.Fecha_ingreso_vehiculo between ? and ?\r\n" + //
         "    group by v.CARPLATE\r\n" + //
         "    order by hp.Fecha_ingreso_vehiculo asc;";
     }

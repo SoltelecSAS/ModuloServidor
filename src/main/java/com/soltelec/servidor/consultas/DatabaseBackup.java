@@ -182,7 +182,7 @@ public class DatabaseBackup {
         return null;
     }
 
-    public static int importBackup(String backupFilePath, String dbName, String usuario, String dbPassword, String puerto, String ip) {
+    public static int ejecutarScriptImport(String backupFilePath, String dbName, String usuario, String dbPassword, String puerto, String ip) {
         Integer exitCode = null;
 
 
@@ -313,7 +313,7 @@ public class DatabaseBackup {
         String usuario = credentials[0];
         String password = credentials[1];
         String puerto = credentials[2];
-        String dbName = credentials[3];
+        String dbName = credentials[3].trim();
         String dbIp = credentials[4];
     
         String url = "jdbc:mysql://"+dbIp+":" + puerto + "/?zeroDateTimeBehavior=convertToNull";
@@ -322,53 +322,67 @@ public class DatabaseBackup {
         boolean isDbExist = false;
     
         try (Connection conexion = DriverManager.getConnection(url, usuario, password);
-             PreparedStatement consultaDagma = conexion.prepareStatement(consulta);
+             PreparedStatement consultaDb = conexion.prepareStatement(consulta);
              Statement stmt = conexion.createStatement()) {
-    
-            // Configurar el sql_mode compatible antes de proceder
-            /* String ajustarSqlMode = "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';";
-            System.out.println("variable global 'NO_AUTO_CREATE_USER' seteada");
-            stmt.executeUpdate(ajustarSqlMode); */
 
             // Ajustar el archivo SQL para eliminar o modificar sql_mode
             eliminarNoAutoCreateUser(ubicacion);
     
             // Revisar si la base de datos existe
-            String database = null;
-            String useDatabase = null;
-    
-            try (ResultSet rc = consultaDagma.executeQuery()) {
-                while (rc.next()) {
-                    database = rc.getString("Database").toLowerCase();
-                    logger.info(database);
-                    if (database.equals(dbName)) {
-                        isDbExist = true;
-                        break;
-                    }
-                }
+            isDbExist = databaseExists(consultaDb, dbName.toLowerCase());
+
+            // Si la base de datos existe y es local, eliminarla y crearla de nuevo
+            if (isDbExist && dbIp.equalsIgnoreCase("127.0.0.1")) {
+                eliminarDbLocal(stmt, dbName);
+                crearDbLocal(stmt, dbName);
             }
 
-            if (isDbExist && dbIp.equalsIgnoreCase("127.0.0.1")) {
-                String dropDatabase = "DROP DATABASE " + dbName;
-                database = dbName;
-                stmt.executeUpdate(dropDatabase);
-            }
-    
-            if (!isDbExist) {
-                String createDatabase = "CREATE DATABASE " + dbName;
-                database = dbName;
-                stmt.executeUpdate(createDatabase);
-            }
-    
-            useDatabase = "USE " + database;
+            // Si la base de datos no existe, crearla
+            if (!isDbExist) crearDbLocal(stmt, dbName);
+
+            // Seleccionar la base de datos donde se importará el backup
+            String useDatabase = "USE " + dbName;
             stmt.executeUpdate(useDatabase);
-    
-            return importBackup(ubicacion, database, usuario, password, puerto, dbIp);
+
+            // Ejecutar el script de importación
+            return ejecutarScriptImport(ubicacion, dbName, usuario, password, puerto, dbIp);
     
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al importar a la base de datos local.\nSi el mensaje dice 'Access denied' le recomendamos que revise la contraseña y/o usuario de la base de datos local,\nde lo contrario contactese con soporte soltelec. \nERROR: \n" + e.getMessage(), "Mensaje", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            CMensajes.mensajeError("Hubo un error con el hilo de tiempo de espera. Por favor intente nuevamente.");
+            e.printStackTrace();
         }
         throw new BackupException("No se pudo importar");
+    }
+
+    private static String eliminarDbLocal(Statement stmt, String dbName) throws SQLException, InterruptedException {
+        String dropDatabase = "DROP DATABASE " + dbName;
+        stmt.executeUpdate(dropDatabase);
+        Thread.sleep(5000);
+        return dbName;
+    }
+
+    private static String crearDbLocal(Statement stmt, String dbName) throws SQLException {
+        String createDatabase = "CREATE DATABASE " + dbName;
+        stmt.executeUpdate(createDatabase);
+        return dbName;
+    }
+
+    private static boolean databaseExists(PreparedStatement consultaDb, String dbName) throws SQLException {
+        boolean isDbExist = false;
+        String nombreDbBuscadaDesdeLaDb = null;
+
+        try (ResultSet rc = consultaDb.executeQuery()) {
+            while (rc.next()) {
+                nombreDbBuscadaDesdeLaDb = rc.getString("Database").toLowerCase();
+                if (nombreDbBuscadaDesdeLaDb.equals(dbName)) {
+                    isDbExist = true;
+                    break;
+                }
+            }
+        }
+        return isDbExist;
     }
 }

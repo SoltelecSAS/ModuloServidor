@@ -10,8 +10,13 @@ public class Clientes {
     ultimaFechaRevision,
     nombre,
     apellido,
+    tipoDocumento,
+    numeroDocumento,
     telefono1,
     telefono2,
+    Direccion,
+    ciudad,
+    email,
     nombreMarca,
     nombreLinea,
     modelo,
@@ -19,5 +24,10 @@ public class Clientes {
     claseVehiculo,
     tipoCombustible,
     tipoServicio,
-    NumeroChasis;
+    NumeroChasis,
+    numeroCertificado,
+    directorTecnico,
+    recepcionista,
+    fechaSoat,
+    esPreventiva;
 }

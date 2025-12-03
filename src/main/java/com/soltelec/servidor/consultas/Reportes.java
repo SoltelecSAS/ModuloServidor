@@ -222,15 +222,30 @@ public class Reportes {
                     String tipoCombustible = rc.getString("Nombre_gasolina");
                     String tipoServicio = rc.getString("Nombre_servicio");
                     String numeroChasis = rc.getString("numero_chasis");
-                    
+                    String tipoDocumento = rc.getString("Tipo_identificacion");
+                    String numeroDocumento = rc.getString("CAROWNER");
+                    String direccion = rc.getString("Direccion");
+                    String ciudad = rc.getString("Nombre_ciudad");
+                    String email = rc.getString("email");
+                    String numeroCertificado = rc.getString("consecutivo_runt");
+                    String directorTecnico = rc.getString("Nombre_usuario");
+                    String recepcionista = rc.getString("recepcionista");
+                    String fechaSoat = rc.getString("fecha_exp_soat");
+                    String esPreventiva = rc.getString("preventiva").equalsIgnoreCase("Y") ? "SI" : "NO";
+
                     // Colocar datos según cada columna que encuentres
                     Clientes cliente = new Clientes(
                         placa, 
                         fechaIngreso, 
                         nombreCliente, 
                         apellidoCliente, 
+                        tipoDocumento,
+                        numeroDocumento,
                         telefono1, 
                         telefono2,
+                        direccion,
+                        ciudad,
+                        email,
                         marca,
                         linea,
                         modelo,
@@ -238,8 +253,14 @@ public class Reportes {
                         claseVehiculo,
                         tipoCombustible,
                         tipoServicio,
-                        numeroChasis
+                        numeroChasis,
+                        numeroCertificado,
+                        directorTecnico,
+                        recepcionista,
+                        fechaSoat,
+                        esPreventiva
                     );
+                    
                     listaDatos.add(cliente);
                 }
             }
@@ -1317,7 +1338,7 @@ public class Reportes {
                         String catalizardor = rc.getString("LUGAR_TEMP").equals("C") ? "SI" : "NO";
 
                         String serialEquipo = rc.getString("serialEquipo");
-                        System.out.println("SerialEqipo = "+serialEquipo);
+                        System.out.println("SerialEquipo = "+serialEquipo);
 
                         if (serialEquipo == null || serialEquipo.equals("otto~;;~-;//;~;;") || !serialEquipo.contains("~")) continue;
 
@@ -1335,6 +1356,8 @@ public class Reportes {
 
                         BigDecimal valorPefBigDecimal= BigDecimal.valueOf(Double.parseDouble(valorPef));
 
+                        System.out.println("Valor PEF BIG DECIMAL: "+valorPefBigDecimal.toString());
+                        System.out.println("Valor PEF: "+valorPef);
                         
                         String[] partesSeriales= serialEquipo.split("~");
                         //Datos del equipo otto utilizados para inspeccion
@@ -1368,8 +1391,19 @@ public class Reportes {
                         pBajaLab = rc.getString("P_BAJA_LAB"),
                         pBajaCil = rc.getString("P_BAJA_CIL"),
                         pBajaCer = rc.getString("P_BAJA_CER"),
-                        pHcAltoP = redondeoSegunNorma(rc.getBigDecimal("P_HC_ALTO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
-                        pHcAltoH = rc.getString("P_HC_ALTO_H"),
+                        pHcAltoH = rc.getString("P_HC_ALTO_H");
+
+                        System.out.println("P_HC_ALTO_H: "+pHcAltoH);
+
+
+                        String
+                        pHcAltoP = redondeoSegunNorma(
+                            rc.getBigDecimal("P_HC_ALTO_H")
+                            .divide(
+                                valorPefBigDecimal, 
+                                10, 
+                                RoundingMode.HALF_UP)
+                        ),
                         pHcBajoP = redondeoSegunNorma(rc.getBigDecimal("P_HC_BAJO_H").divide(valorPefBigDecimal, 10, RoundingMode.HALF_UP)),
                         pHcBajoH = rc.getString("P_HC_BAJO_H"),
                         pCoAlto = rc.getString("P_CO_ALTO"),

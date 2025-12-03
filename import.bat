@@ -1,1 +1,1 @@
-mysql --defaults-extra-file=mysql.cnf --host=127.0.0.1 --port=3306 popayan  < "C:\\BACKUPS\\popayan.sql"
+mysql --defaults-extra-file=mysql.cnf --host=127.0.0.1 --port=3306 cda27Local  < "C:\\BACKUPS\\backupcda27.sql"
